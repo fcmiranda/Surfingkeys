@@ -252,6 +252,7 @@ function start(browser) {
     }
 
     function loadSettings(keys, cb) {
+        console.log('loading settings')
         var tmpSet = {
             blocklist: {},
             marks: {},

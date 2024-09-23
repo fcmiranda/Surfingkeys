@@ -42,7 +42,9 @@ function modifyManifest(browser, mode, buffer) {
 
 module.exports = (env, argv) => {
     const mode = argv.mode;
-    const browser = process.env.browser ? process.env.browser : 'chrome';
+    console.log(`Generating build for the mode: ${mode}`);
+    const browser = process.env.browser ? process.env.browser : 'firefox';
+    console.log(`Generating build for  the browser: ${browser}`);
     let buildPath = path.resolve(__dirname, `../dist/${mode}/`);
     buildPath += "/" + browser;
     const entry = {

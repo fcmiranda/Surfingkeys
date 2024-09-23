@@ -707,6 +707,7 @@ div.hint-scrollable {
      * });
      */
     self.create = function(cssSelector, onHintKey, attrs) {
+        console.log('create hint! :D');
         if (numeric) {
             characters = "1234567890";
         }
