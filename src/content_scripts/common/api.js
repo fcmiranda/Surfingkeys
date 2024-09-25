@@ -796,6 +796,8 @@ function createAPI(clipboard, insert, normal, hints, visual, front, browser) {
         tabOpenLink,
         vmap,
         vmapkey,
+        changeScrollTarget: normal.changeScrollTarget,
+        setScrollTarget: normal.setScrollTarget,
         Clipboard: clipboard,
         Normal: {
             feedkeys: normal.feedkeys,
