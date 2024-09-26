@@ -81,6 +81,7 @@
     "@pixi/utils": "^7.4.0",
     "ace-builds": "^1.4.12",
     "dompurify": "^2.3.1",
+    "fuzzysort": "^3.0.2",
     "js-base64": "^3.7.2",
     "lodash": "^4.17.21",
     "marked": "^4.0.10",

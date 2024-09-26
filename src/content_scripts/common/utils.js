@@ -822,7 +822,10 @@ function regexFromString(str, highlight) {
     const flags = runtime.getCaseSensitive(str) ? "g" : "gi";
     str = str.replace(/[|\\{}()[\]^$+*?.]/g, '\\$&');
     if (highlight) {
-        rxp = new RegExp(str.replace(/\s+/, "\|"), flags);
+        var regExpression =  str.replace(/\s+/gi, "\|");
+        rxp = new RegExp(regExpression, flags);
+        //rxp = new RegExp(str.split(' ').join('|'), flags);
+        
     } else {
         var words = str.split(/\s+/).map(function(w) {
             return `(?=.*${w})`;

@@ -393,6 +393,9 @@ function createOmnibar(front, clipboard) {
     self.createURLItem = function(b, rxp) {
         b.title = (b.title && b.title !== "") ? b.title : safeDecodeURI(b.url);
         var type = "🔥", additional = "", uid = b.uid;
+
+        b.favIconUrl = `https://www.google.com/s2/favicons?domain=${b.url}`;
+
         if (b.hasOwnProperty('lastVisitTime')) {
             type = "🕜";
             additional = `<span class=omnibar_timestamp># ${timeStampString(b.lastVisitTime)}</span>`;
@@ -400,7 +403,8 @@ function createOmnibar(front, clipboard) {
             uid = "H" + b.url;
         } else if(b.hasOwnProperty('dateAdded')) {
             type = "⭐";
-            additional = `<span class=omnibar_folder>@ ${bookmarkFolders[b.parentId].title || ""}</span> <span class=omnibar_timestamp># ${timeStampString(b.dateAdded)}</span>`;
+            const folderPath = htmlEncode(bookmarkFolders[b.parentId].title || "");
+            additional = `<span class=omnibar_folder>@ ${self.highlight(rxp, folderPath)}</span>`;
             uid = "B" + b.id;
         } else if(b.hasOwnProperty('width')) {
             type = "🔖";
@@ -415,7 +419,7 @@ function createOmnibar(front, clipboard) {
             attachFaviconToImgSrc(b, li.querySelector('img'));
         }
         li.appendChild(createElementWithContent('div',
-            `<div class="title">${self.highlight(rxp, htmlEncode(b.title))} ${additional}</div><div class="url">${self.highlight(rxp, htmlEncode(safeDecodeURIComponent(b.url)))}</div>`, { "class": "text-container" }));
+            `<div class="title">${self.highlight(rxp, htmlEncode(b.title))} ${additional}</div><div class="url">${self.highlight(rxp, htmlEncode(safeDecodeURIComponent(b.url)))}</div>`, { "class": "text-container" }));     
         li.uid = uid;
         li.url = b.url;
         return li;
