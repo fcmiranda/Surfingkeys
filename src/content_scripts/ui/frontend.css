@@ -139,6 +139,63 @@ body {
     vertical-align: middle;
     display: table-cell;
 }
+
+#sk_omnibarSearchResult {
+    display: flex;
+    gap: 30px;
+    padding: 20px;
+}
+
+#sk_omnibarSearchResult .logo-wrapper {
+    position: relative;
+    cursor: pointer;
+    transition: transform 0.3s ease;
+}
+
+#sk_omnibarSearchResult .logo-wrapper:hover {
+    transform: scale(1.1);
+}
+
+#sk_omnibarSearchResult .logo {
+    width: 100%;
+    height: 100%;
+    border-radius: 12px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    transition: box-shadow 0.3s ease;
+}
+
+#sk_omnibarSearchResult .logo-wrapper:hover .logo {
+    box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+}
+
+#sk_omnibarSearchResult .icon-overlay {
+    position: absolute;
+    bottom: -8px;
+    right: -10px;
+    color: #333;
+    background-color: white;
+    border-radius: 50%;
+    padding: 1px;
+    height: 17px;
+    width: 16px;
+}
+
+#sk_omnibarSearchResult .logo-wrapper:hover .icon-overlay {
+    transform: scale(1.2) translate(-2px, -2px);
+    background-color: #f0f0f0;
+}
+
+#sk_omnibarSearchResult .icon-overlay .material-icons {
+    font-size: 16px;
+}
+
+#sk_omnibarSearchResult .logo .material-icons {
+    color: white;
+    font-size: 32px;
+}
+
 #sk_omnibarSearchResult li .icon {
     margin-right: 0.5rem;
     width: 16px;

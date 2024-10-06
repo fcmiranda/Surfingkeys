@@ -409,15 +409,19 @@ function createOmnibar(front, clipboard) {
         } else if(b.hasOwnProperty('width')) {
             type = "🔖";
             uid = "T" + b.windowId + ":" + b.id;
-            // } else if(b.type && /^\p{Emoji}$/u.test(b.type)) {
         } else if(b.type && b.type.length === 2 && b.type.charCodeAt(0) > 255) {
             type = b.type;
         }
-        var li = createElementWithContent('li', `<div class="icon">${type}</div>`);
-        if (b.hasOwnProperty('favIconUrl')) {
-            li = createElementWithContent('li', `<img class="icon"/>`);
-            attachFaviconToImgSrc(b, li.querySelector('img'));
-        }
+
+        var li = createElementWithContent('li', `
+            <div class="logo-wrapper">
+                <div class="logo">
+                    <img src="${b.favIconUrl}" />
+                </div>
+                <div class="icon-overlay">
+                    <span class="material-icons">${type}</span>
+                </div>
+            </div>`);
         li.appendChild(createElementWithContent('div',
             `<div class="title">${self.highlight(rxp, htmlEncode(b.title))} ${additional}</div><div class="url">${self.highlight(rxp, htmlEncode(safeDecodeURIComponent(b.url)))}</div>`, { "class": "text-container" }));     
         li.uid = uid;

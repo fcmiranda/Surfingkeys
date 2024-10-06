@@ -1,0 +1,27 @@
+
+"Eu gostaria de modernizar toda a extensão de navegador SurfingKeys, que atualmente é escrita em javascript puro. O objetivo é migrá-la para a última versão do React, com typescript e vite foco em melhorar a experiência do usuário (UX) o máximo possível.
+
+Por favor, siga as diretrizes abaixo:
+
+    Migração para React:
+        Reescreva toda a interface da extensão usando React, criando componentes funcionais e reutilizáveis.
+        Utilize hooks modernos como useState, useEffect e useContext para gerenciar o estado global e local.
+        Refatore o código de interação com o navegador, integrando as APIs JavaScript de forma otimizada dentro do React.
+
+    Melhorias na UX:
+        Reestruture a interface para ser mais intuitiva e responsiva, garantindo que o uso por teclado (atalhos e navegação) continue fluido e eficiente.
+        Melhore a acessibilidade, garantindo compatibilidade com leitores de tela e teclados.
+        Utilize animações sutis e feedback visual para melhorar a interatividade.
+        Integre bibliotecas modernas de UI (como Material-UI ou Chakra UI) para garantir uma experiência de design moderna e responsiva.
+
+    Performance e Modularização:
+        Otimize a performance da extensão, minimizando o tempo de resposta das ações e melhorando a eficiência.
+        Modularize o código para facilitar a manutenção e escalabilidade futura, separando a lógica de negócios da interface.
+
+    Funcionalidades Específicas:
+        Reescreva a Omnibar, focando na navegação por teclado e pesquisa em tempo real.
+        Refatore e modernize todas as interações com mapeamento de teclas e atalhos, garantindo que tudo funcione perfeitamente com a nova arquitetura React.
+
+    Testes e Manutenção:
+        Garanta que a nova estrutura de código seja bem testada e cubra todos os cenários de uso atuais.
+        Facilite a manutenção futura da extensão, documentando as principais mudanças e decisões técnicas."
