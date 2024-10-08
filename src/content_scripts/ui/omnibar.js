@@ -24,8 +24,7 @@ import { RUNTIME, runtime } from '../common/runtime.js';
 
 
 const fnPromptIndicatorHtml = (contextIcon, actionIcon ='search') => `<div class="icon-container"><span class="material-symbols-outlined context-icon">${contextIcon}</span><span class="material-symbols-outlined action-icon">${actionIcon}</span></div>`
-const searchHtml = `<span class="material-symbols-outlined search-icon">search</span>`;
-const fnIconHtml = icon => `<span class="material-symbols-outlined">${icon}</span>`;
+const fnIconHtml = icon => icon ? `<span class="material-symbols-outlined">${icon}</span>` : '' ;
 
 function createOmnibar(front, clipboard) {
     var self = new Mode("Omnibar");
@@ -658,7 +657,7 @@ function createOmnibar(front, clipboard) {
 
     self.listWords = function(words) {
         self.listResults(words, function(w) {
-            var li = createElementWithContent('li', `⌕ ${w}`);
+            var li = createElementWithContent('li', `${fnIconHtml('search')} ${w}`);
             li.query = w;
             return li;
         });
@@ -751,6 +750,7 @@ function createOmnibar(front, clipboard) {
 function OpenBookmarks(omnibar) {
     var self = {
         prompt: fnPromptIndicatorHtml('hotel_class'),
+        focusFirstCandidate:true,
         inFolder: []
     };
 
@@ -846,7 +846,7 @@ function OpenBookmarks(omnibar) {
 
     self.onClose = function() {
         self.inFolder = [];
-        self.prompt = `bookmark${searchHtml}`;
+        self.prompt = fnPromptIndicatorHtml('hotel_class');
         currentFolderId = undefined;
     };
 
@@ -1058,7 +1058,7 @@ function OpenTabs(omnibar) {
     };
     self.onOpen = function(args) {
         if (args && args.action === "gather") {
-            self.prompt = `Gather filtered tabs into current window${searchHtml}`;
+            self.prompt = fnPromptIndicatorHtml('tab_group');
             self.onEnter = function() {
                 RUNTIME('gatherTabs', {
                     tabs: omnibar.getItems()
@@ -1067,7 +1067,7 @@ function OpenTabs(omnibar) {
             };
             getTabsArgs = {queryInfo: {currentWindow: false}};
         } else {
-            self.prompt = `tabs${searchHtml}`;
+            self.prompt = fnPromptIndicatorHtml('tab_group');
             self.onEnter = omnibar.openFocused.bind(self);
             getTabsArgs = {};
             if (args && typeof(args.filter) === 'string') {
@@ -1088,7 +1088,7 @@ function OpenTabs(omnibar) {
 
 function OpenWindows(omnibar, front) {
     const self = {
-        prompt: `Move current tab to window${searchHtml}`
+        prompt: fnPromptIndicatorHtml('move_group')
     };
 
     self.getResults = function () {
@@ -1162,7 +1162,7 @@ function OpenWindows(omnibar, front) {
 function OpenVIMarks(omnibar) {
     var self = {
         focusFirstCandidate: true,
-        prompt: `VIMarks${searchHtml}`
+        prompt: fnPromptIndicatorHtml('collections_bookmark')
     };
 
     self.onOpen = function() {
@@ -1183,7 +1183,7 @@ function OpenVIMarks(omnibar) {
                 if (query === "" || markInfo.url.indexOf(query) !== -1) {
                     urls.push({
                         title: m,
-                        type: '🔗',
+                        type: 'developer_guide',
                         uid: 'M' + m,
                         url: markInfo.url
                     });
@@ -1255,7 +1255,7 @@ function SearchEngine(omnibar, front) {
             } else if (w.hasOwnProperty('url')) {
                 return omnibar.createURLItem(w, rxp);
             } else {
-                var li = createElementWithContent('li', `⌕ ${w}`);
+                var li = createElementWithContent('li', `${fnIconHtml('search')} ${w}`);
                 li.query = w;
                 return li;
             }
@@ -1299,7 +1299,7 @@ function SearchEngine(omnibar, front) {
 
     front._actions['addSearchAlias'] = function (message) {
         self.aliases[message.alias] = {
-            prompt: '' + message.prompt + searchHtml,
+            prompt: '' + message.prompt + fnIconHtml('search'),
             url: message.url,
             suggestionURL: message.suggestionURL
         };
@@ -1344,7 +1344,7 @@ function SearchEngine(omnibar, front) {
 function Commands(omnibar, front) {
     var self = {
         focusFirstCandidate: true,
-        prompt: ':',
+        prompt: fnIconHtml('terminal'),
     }, items = {};
 
     var historyInc = 0;
@@ -1374,7 +1374,7 @@ function Commands(omnibar, front) {
         });
         if (candidates.length) {
             omnibar.listResults(candidates, function(c) {
-                var li = createElementWithContent('li', `${c}<span class=annotation>${htmlEncode(items[c].annotation)}</span>`);
+                var li = createElementWithContent('li', `${fnIconHtml(items[c].icon)}${c}<span class=annotation>${htmlEncode(items[c].annotation)}</span>`);
                 li.cmd = c;
                 return li;
             });
@@ -1435,9 +1435,10 @@ function Commands(omnibar, front) {
         execute(message.cmdline);
     };
 
-    omnibar.command = function (cmd, annotation, jscode) {
+    omnibar.command = function ({cmd, annotation, icon}, jscode, ) {
         var cmd_code = {
-            code: jscode
+            code: jscode, 
+            icon
         };
         var ag = parseAnnotation({annotation: annotation, feature_group: 14});
         cmd_code.feature_group = ag.feature_group;
@@ -1502,7 +1503,7 @@ function OmniQuery(omnibar, front) {
 function OpenUserURLs(omnibar) {
     var self = {
         focusFirstCandidate: true,
-        prompt: `UserURLs${searchHtml}`
+        prompt: `UserURLs${fnIconHtml('search')}`
     };
 
     var _items;
