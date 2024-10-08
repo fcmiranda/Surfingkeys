@@ -1,0 +1,29 @@
+#sk_omnibarSearchResult {
+  padding: 0px;
+}
+
+#sk_omnibarSearchResult>ul>li {
+  padding: 0;
+  min-height: 2rem;
+}
+
+#sk_omnibarSearchResult li div.url {
+  display: none;
+}
+
+#sk_omnibarSearchResult li .switch-tab {
+  display: flex;
+  align-items: center;
+  min-width: 7rem;
+  justify-content: flex-end;
+}
+
+#sk_omnibarSearchResult .logo-wrapper {
+  width: 2rem;
+  height: 2rem;
+  margin-right: 2rem;
+}
+
+#sk_omnibarSearchResult>ul>li {
+  border-radius: 8px;
+}

@@ -22,8 +22,9 @@ import {
 } from '../common/utils.js';
 import { RUNTIME, runtime } from '../common/runtime.js';
 
-const separator = '➤';
-const separatorHtml = `<span class='separator'>${separator}</span>`;
+
+const fnSearchTypeHtml = (icon)=> `<div><span class="material-icons search-icon">${icon}</span><span class="material-icons search-icon">search</span></div>`
+const searchHtml = `<span class="material-icons search-icon">search</span>`;
 
 function createOmnibar(front, clipboard) {
     var self = new Mode("Omnibar");
@@ -392,22 +393,25 @@ function createOmnibar(front, clipboard) {
 
     self.createURLItem = function(b, rxp) {
         b.title = (b.title && b.title !== "") ? b.title : safeDecodeURI(b.url);
-        var type = "🔥", additional = "", uid = b.uid;
+        var type = "", additional = "", uid = b.uid;
 
-        b.favIconUrl = `https://www.google.com/s2/favicons?domain=${b.url}`;
+        const isUrl = b.url.startsWith("http://") || b.url.startsWith("https://");
+        if(isUrl) {
+            b.favIconUrl = `https://www.google.com/s2/favicons?domain=${b.url}&sz=16`;
+        }
 
         if (b.hasOwnProperty('lastVisitTime')) {
-            type = "🕜";
+            type = "history";
             additional = `<span class=omnibar_timestamp># ${timeStampString(b.lastVisitTime)}</span>`;
             additional += `<span class=omnibar_visitcount> (${b.visitCount})</span>`;
             uid = "H" + b.url;
         } else if(b.hasOwnProperty('dateAdded')) {
-            type = "⭐";
+            type = "bookmark";
             const folderPath = htmlEncode(bookmarkFolders[b.parentId].title || "");
             additional = `<span class=omnibar_folder>@ ${self.highlight(rxp, folderPath)}</span>`;
             uid = "B" + b.id;
         } else if(b.hasOwnProperty('width')) {
-            type = "🔖";
+            type = "tab";
             uid = "T" + b.windowId + ":" + b.id;
         } else if(b.type && b.type.length === 2 && b.type.charCodeAt(0) > 255) {
             type = b.type;
@@ -416,14 +420,21 @@ function createOmnibar(front, clipboard) {
         var li = createElementWithContent('li', `
             <div class="logo-wrapper">
                 <div class="logo">
-                    <img src="${b.favIconUrl}" />
+                    ${isUrl ? `<img src="${b.favIconUrl}" />` : `<span class="material-icons">public</span>`}
                 </div>
                 <div class="icon-overlay">
                     <span class="material-icons">${type}</span>
                 </div>
             </div>`);
         li.appendChild(createElementWithContent('div',
-            `<div class="title">${self.highlight(rxp, htmlEncode(b.title))} ${additional}</div><div class="url">${self.highlight(rxp, htmlEncode(safeDecodeURIComponent(b.url)))}</div>`, { "class": "text-container" }));     
+            `<div class="title">${self.highlight(rxp, htmlEncode(b.title))} ${additional}</div>
+             <div class="url">${self.highlight(rxp, htmlEncode(safeDecodeURIComponent(b.url)))}</div>`, { "class": "text-container" }));
+        if(type ==="tab"){
+            li.appendChild(createElementWithContent('div', `
+                Switch to Tab
+                <span class="material-icons">arrow_forward</span>
+            `, { "class": "switch-tab" }));
+        }     
         li.uid = uid;
         li.url = b.url;
         return li;
@@ -563,6 +574,7 @@ function createOmnibar(front, clipboard) {
         lastInput = "";
         self.input.value = "";
         self.input.placeholder = "";
+        self.input.id = "searchInput";
         setSanitizedContent(self.resultsDiv, "");
         lastHandler = null;
         handler.onClose && handler.onClose();
@@ -675,7 +687,7 @@ function createOmnibar(front, clipboard) {
 
     self.addHandler('Bookmarks', OpenBookmarks(self));
     self.addHandler('AddBookmark', AddBookmark(self));
-    self.addHandler('History', OpenURLs(`history${separatorHtml}`, self, () => {
+    self.addHandler('History', OpenURLs(`history${searchHtml}`, self, () => {
         return new Promise((resolve, reject) => {
             RUNTIME('getHistory', {
                 maxResults: self.getHistoryCacheSize(),
@@ -686,7 +698,7 @@ function createOmnibar(front, clipboard) {
             });
         });
     }));
-    self.addHandler('URLs', OpenURLs(separatorHtml, self, () => {
+    self.addHandler('URLs', OpenURLs(fnSearchTypeHtml('public'), self, () => {
         return new Promise((resolve, reject) => {
             RUNTIME('getTabs', {
                 queryInfo: runtime.conf.omnibarTabsQuery
@@ -708,14 +720,14 @@ function createOmnibar(front, clipboard) {
             });
         });
     }));
-    self.addHandler('RecentlyClosed', OpenURLs(`Recently closed${separatorHtml}`, self, () => {
+    self.addHandler('RecentlyClosed', OpenURLs(fnSearchTypeHtml('tab_recent'), self, () => {
         return new Promise((resolve, reject) => {
             RUNTIME('getRecentlyClosed', null, function(response) {
                 resolve(filterByTitleOrUrl(response.urls, self.input.value));
             });
         });
     }));
-    self.addHandler('TabURLs', OpenURLs(`Tab History${separatorHtml}`, self, () => {
+    self.addHandler('TabURLs', OpenURLs(fnSearchTypeHtml('tab'), self, () => {
         return new Promise((resolve, reject) => {
             RUNTIME('getTabURLs', null, function(response) {
                 resolve(filterByTitleOrUrl(response.urls, self.input.value));
@@ -738,7 +750,7 @@ function createOmnibar(front, clipboard) {
 
 function OpenBookmarks(omnibar) {
     var self = {
-        prompt: `bookmark${separatorHtml}`,
+        prompt: fnSearchTypeHtml('bookmarks'),
         inFolder: []
     };
 
@@ -757,7 +769,6 @@ function OpenBookmarks(omnibar) {
             currentFolderId = undefined;
             RUNTIME('getBookmarks', null, self.onResponse);
         }
-        self.prompt = fl.prompt;
         setSanitizedContent(omnibar.promptSpan, self.prompt);
         lastFocused = fl.focused;
     }
@@ -835,7 +846,7 @@ function OpenBookmarks(omnibar) {
 
     self.onClose = function() {
         self.inFolder = [];
-        self.prompt = `bookmark${separatorHtml}`;
+        self.prompt = `bookmark${searchHtml}`;
         currentFolderId = undefined;
     };
 
@@ -892,7 +903,7 @@ function OpenBookmarks(omnibar) {
 function AddBookmark(omnibar) {
     var self = {
         focusFirstCandidate: true,
-        prompt: `add bookmark${separatorHtml}`
+        prompt: fnSearchTypeHtml('bookmark_manager')
     }, folders, origFFC;
 
     self.onOpen = function(arg) {
@@ -905,7 +916,7 @@ function AddBookmark(omnibar) {
             RUNTIME("getBookmark", null, function(resp) {
                 if (resp.bookmarks.length) {
                     var b = resp.bookmarks[0];
-                    setSanitizedContent(omnibar.promptSpan, `edit bookmark${separatorHtml}`);
+                    setSanitizedContent(omnibar.promptSpan, fnSearchTypeHtml('bookmark_manager'));
                     omnibar.resultsDiv.querySelector('li.focused').classList.remove('focused');
                     omnibar.focusItem(`li[folder="${b.parentId}"]`);
                 }
@@ -1047,7 +1058,7 @@ function OpenTabs(omnibar) {
     };
     self.onOpen = function(args) {
         if (args && args.action === "gather") {
-            self.prompt = `Gather filtered tabs into current window${separatorHtml}`;
+            self.prompt = `Gather filtered tabs into current window${searchHtml}`;
             self.onEnter = function() {
                 RUNTIME('gatherTabs', {
                     tabs: omnibar.getItems()
@@ -1056,7 +1067,7 @@ function OpenTabs(omnibar) {
             };
             getTabsArgs = {queryInfo: {currentWindow: false}};
         } else {
-            self.prompt = `tabs${separatorHtml}`;
+            self.prompt = `tabs${searchHtml}`;
             self.onEnter = omnibar.openFocused.bind(self);
             getTabsArgs = {};
             if (args && typeof(args.filter) === 'string') {
@@ -1077,7 +1088,7 @@ function OpenTabs(omnibar) {
 
 function OpenWindows(omnibar, front) {
     const self = {
-        prompt: `Move current tab to window${separatorHtml}`
+        prompt: `Move current tab to window${searchHtml}`
     };
 
     self.getResults = function () {
@@ -1151,7 +1162,7 @@ function OpenWindows(omnibar, front) {
 function OpenVIMarks(omnibar) {
     var self = {
         focusFirstCandidate: true,
-        prompt: `VIMarks${separatorHtml}`
+        prompt: `VIMarks${searchHtml}`
     };
 
     self.onOpen = function() {
@@ -1288,7 +1299,7 @@ function SearchEngine(omnibar, front) {
 
     front._actions['addSearchAlias'] = function (message) {
         self.aliases[message.alias] = {
-            prompt: '' + message.prompt + separatorHtml,
+            prompt: '' + message.prompt + searchHtml,
             url: message.url,
             suggestionURL: message.suggestionURL
         };
@@ -1491,7 +1502,7 @@ function OmniQuery(omnibar, front) {
 function OpenUserURLs(omnibar) {
     var self = {
         focusFirstCandidate: true,
-        prompt: `UserURLs${separatorHtml}`
+        prompt: `UserURLs${searchHtml}`
     };
 
     var _items;

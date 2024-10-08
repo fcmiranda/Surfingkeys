@@ -1,0 +1,309 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Twitter-style Omnibar with Overlay Icons</title>
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet" />
+    <style>
+        :root {
+            --bg-color: #e7ecf0;
+            --primary-color: #1da1f2;
+            --text-color: #0f1419;
+            --secondary-text: #536471;
+            --hover-color: #f7f9f9;
+            --border-color: #cfd9de;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto,
+                Ubuntu, 'Helvetica Neue', sans-serif;
+            background-color: var(--bg-color);
+            margin: 0;
+            padding: 20px;
+            color: var(--text-color);
+            background-image: url('https://img.freepik.com/fotos-gratis/3d-renderizar-icone-de-raio-de-trovao-de-venda-de-relampago_107791-17347.jpg?t=st=1728244974~exp=1728245574~hmac=59cc34864c58e6cb91e9183e3c2e7230fda458fa92a9c221b5562e793851bfe3');
+            background-size: cover;
+            background-position: center;
+            background-attachment: fixed;
+        }
+
+        .omnibar {
+            max-width: 600px;
+            margin: 0 auto;
+            background-color: white;
+            border-radius: 16px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+            backdrop-filter: blur(10px);
+            /* Apply blur effect */
+            background-color: rgba(255, 255, 255, 0.7);
+            overflow: hidden;
+        }
+
+        .search-box {
+            display: flex;
+            align-items: center;
+            padding: 12px 16px;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .search-icon {
+            width: 32px;
+            height: 32px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-right: 12px;
+        }
+
+        .search-box input {
+            flex-grow: 1;
+            border: none;
+            font-size: 15px;
+            color: var(--text-color);
+            outline: none;
+            background: transparent;
+        }
+
+        .search-box input::placeholder {
+            color: var(--secondary-text);
+        }
+
+        .gray-bar {
+            background-color: #f7f9f9;
+            padding: 8px 16px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .gray-bar-content {
+            display: flex;
+            align-items: center;
+        }
+
+        .gray-bar-icon {
+            width: 32px;
+            height: 32px;
+            margin-right: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .gray-bar-text {
+            font-size: 15px;
+            font-weight: 500;
+        }
+
+        .switch-tab {
+            display: flex;
+            align-items: center;
+            color: var(--secondary-text);
+            font-size: 13px;
+            font-weight: 500;
+        }
+
+        .switch-tab .material-icons {
+            margin-left: 4px;
+            font-size: 18px;
+        }
+
+        .bookmarks {
+            list-style-type: none;
+            padding: 0;
+            margin: 0;
+        }
+
+        .bookmarks li {
+            padding: 12px 16px;
+            display: flex;
+            align-items: center;
+            transition: background-color 0.2s;
+            cursor: pointer;
+        }
+
+        .bookmarks li:hover {
+            background-color: var(--hover-color);
+        }
+
+        .icon-container {
+            position: relative;
+            width: 32px;
+            height: 32px;
+            margin-right: 12px;
+        }
+
+        .site-icon {
+            width: 32px;
+            height: 32px;
+            border-radius: 4px;
+            background-color: var(--primary-color);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .overlay-icon {
+            position: absolute;
+            bottom: -4px;
+            right: -4px;
+            background-color: white;
+            border-radius: 50%;
+            width: 16px;
+            height: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
+        }
+
+        .overlay-icon .material-icons {
+            font-size: 12px;
+            color: var(--text-color);
+        }
+
+        .content {
+            flex-grow: 1;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .title {
+            font-weight: 500;
+            color: var(--text-color);
+        }
+
+        .url {
+            font-size: 13px;
+            color: var(--secondary-text);
+            margin-top: 2px;
+        }
+
+
+        :root {
+            --bg-color: #15202b;
+            --text-color: #ffffff;
+            --secondary-text: #8899a6;
+            --hover-color: #192734;
+            --border-color: #38444d;
+        }
+
+        .omnibar {
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+            backdrop-filter: blur(10px);
+            /* Apply blur effect */
+            background-color: rgba(0, 0, 0, 0.7);
+        }
+
+        .gray-bar {
+            background-color: #192734;
+        }
+
+        .overlay-icon {
+            background-color: #15202b;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="omnibar">
+        <div class="search-box">
+            <div class="search-icon">
+                <span class="material-icons" style="color: var(--primary-color)">search</span>
+            </div>
+            <input type="text" placeholder="Search Twitter" id="searchInput" />
+        </div>
+        <div class="gray-bar">
+            <div class="gray-bar-content">
+                <div class="gray-bar-icon">
+                    <span class="material-icons" style="color: var(--primary-color)">search</span>
+                </div>
+                <span class="gray-bar-text">arc site search</span>
+            </div>
+            <div class="switch-tab">
+                Switch to Tab
+                <span class="material-icons">arrow_forward</span>
+            </div>
+        </div>
+        <ul class="bookmarks" id="bookmarksList">
+            <!-- Bookmark items will be dynamically inserted here -->
+        </ul>
+    </div>
+
+    <script>
+        const bookmarks = [
+            {
+                title: 'Twitter',
+                url: 'twitter.com',
+                icon: 'link',
+                overlayType: 'star',
+            },
+            {
+                title: 'Twitter',
+                url: 'twitter.com/home',
+                icon: 'link',
+                overlayType: 'history',
+            },
+            {
+                title: 'Notifications',
+                url: 'twitter.com/notifications',
+                icon: 'notifications',
+                overlayType: 'tab',
+            },
+        ];
+
+        const overlayIcons = {
+            star: 'star',
+            history: 'history',
+            tab: 'tab',
+        };
+
+        const bookmarksList = document.getElementById('bookmarksList');
+        const searchInput = document.getElementById('searchInput');
+
+        function renderBookmarks(items) {
+            bookmarksList.innerHTML = items
+                .map(
+                    (item) => `
+                <li>
+                    <div class="icon-container">
+                        <div class="site-icon">
+                            <span class="material-icons" style="color: white;">${item.icon
+                        }</span>
+                        </div>
+                        <div class="overlay-icon">
+                            <span class="material-icons">${overlayIcons[item.overlayType]
+                        }</span>
+                        </div>
+                    </div>
+                    <div class="content">
+                        <span class="title">${item.title}</span>
+                        <span class="url">${item.url}</span>
+                    </div>
+                </li>
+            `
+                )
+                .join('');
+        }
+
+        function filterBookmarks(query) {
+            return bookmarks.filter(
+                (item) =>
+                    item.title.toLowerCase().includes(query.toLowerCase()) ||
+                    item.url.toLowerCase().includes(query.toLowerCase())
+            );
+        }
+
+        searchInput.addEventListener('input', (e) => {
+            const filtered = filterBookmarks(e.target.value);
+            renderBookmarks(filtered);
+        });
+
+        renderBookmarks(bookmarks);
+    </script>
+</body>
+
+</html>
