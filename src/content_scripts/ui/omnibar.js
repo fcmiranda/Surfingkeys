@@ -25,6 +25,7 @@ import { RUNTIME, runtime } from '../common/runtime.js';
 
 const fnPromptIndicatorHtml = (contextIcon, actionIcon ='search') => `<div class="icon-container"><span class="material-symbols-outlined context-icon">${contextIcon}</span><span class="material-symbols-outlined action-icon">${actionIcon}</span></div>`
 const searchHtml = `<span class="material-symbols-outlined search-icon">search</span>`;
+const fnIconHtml = icon => `<span class="material-symbols-outlined">${icon}</span>`;
 
 function createOmnibar(front, clipboard) {
     var self = new Mode("Omnibar");
@@ -518,7 +519,7 @@ function createOmnibar(front, clipboard) {
                 }
                 li = self.createURLItem(b, rxp);
             } else if (_showFolder) {
-                li = createElementWithContent('li', `<div class="title">▷ ${self.highlight(rxp, b.title)}</div>`);
+                li = createElementWithContent('li', `<div class="title">${fnIconHtml('folder_special')}${self.highlight(rxp, b.title)}</div>`);
                 li.folder_name = b.title;
                 li.folderId = b.id;
             }
@@ -686,7 +687,7 @@ function createOmnibar(front, clipboard) {
 
     self.addHandler('Bookmarks', OpenBookmarks(self));
     self.addHandler('AddBookmark', AddBookmark(self));
-    self.addHandler('History', OpenURLs(`history${searchHtml}`, self, () => {
+    self.addHandler('History', OpenURLs(fnPromptIndicatorHtml('history'), self, () => {
         return new Promise((resolve, reject) => {
             RUNTIME('getHistory', {
                 maxResults: self.getHistoryCacheSize(),
@@ -902,7 +903,7 @@ function OpenBookmarks(omnibar) {
 function AddBookmark(omnibar) {
     var self = {
         focusFirstCandidate: true,
-        prompt: fnPromptIndicatorHtml('folder_special')
+        prompt: fnPromptIndicatorHtml('grade', 'add')
     }, folders, origFFC;
 
     self.onOpen = function(arg) {
@@ -910,12 +911,12 @@ function AddBookmark(omnibar) {
         omnibar.listBookmarkFolders(function(response) {
             folders = response.folders;
             omnibar.listResults(folders.slice(), function(f) {
-                return createElementWithContent('li', `▷ ${f.title}`, {folder: f.id});
+                return createElementWithContent('li', `${fnIconHtml('folder_special')}<span class="folder-title">${f.title}</span>`, {folder: f.id});
             });
             RUNTIME("getBookmark", null, function(resp) {
                 if (resp.bookmarks.length) {
                     var b = resp.bookmarks[0];
-                    setSanitizedContent(omnibar.promptSpan, fnPromptIndicatorHtml('folder_special'));
+                    setSanitizedContent(omnibar.promptSpan, fnPromptIndicatorHtml('grade', 'edit'));
                     omnibar.resultsDiv.querySelector('li.focused').classList.remove('focused');
                     omnibar.focusItem(`li[folder="${b.parentId}"]`);
                 }
@@ -937,8 +938,8 @@ function AddBookmark(omnibar) {
     };
 
     self.onTabKey = function() {
-        var fi = omnibar.resultsDiv.querySelector('li.focused');
-        omnibar.input.value = fi.innerHTML.substr(2);
+        var fi = omnibar.resultsDiv.querySelector('li.focused .folder-title');
+        omnibar.input.value = fi.innerHTML.substr(1);
     };
 
     self.onEnter = function() {
@@ -994,7 +995,7 @@ function AddBookmark(omnibar) {
               return b.title.toLowerCase().indexOf(query.toLowerCase()) !== -1;
         });
         omnibar.listResults(matches, function(f) {
-            return createElementWithContent('li', `▷ ${f.title}`, {folder: f.id});
+            return createElementWithContent('li', `${fnIconHtml('folder_special')}<span class="folder-title">${f.title}</span>`, {folder: f.id});
         });
     };
 
