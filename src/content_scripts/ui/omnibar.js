@@ -23,8 +23,8 @@ import {
 import { RUNTIME, runtime } from '../common/runtime.js';
 
 
-const fnSearchTypeHtml = (icon)=> `<div><span class="material-icons search-icon">${icon}</span><span class="material-icons search-icon">search</span></div>`
-const searchHtml = `<span class="material-icons search-icon">search</span>`;
+const fnPromptIndicatorHtml = (contextIcon, actionIcon ='search') => `<div class="icon-container"><span class="material-symbols-outlined context-icon">${contextIcon}</span><span class="material-symbols-outlined action-icon">${actionIcon}</span></div>`
+const searchHtml = `<span class="material-symbols-outlined search-icon">search</span>`;
 
 function createOmnibar(front, clipboard) {
     var self = new Mode("Omnibar");
@@ -406,7 +406,7 @@ function createOmnibar(front, clipboard) {
             additional += `<span class=omnibar_visitcount> (${b.visitCount})</span>`;
             uid = "H" + b.url;
         } else if(b.hasOwnProperty('dateAdded')) {
-            type = "bookmark";
+            type = "grade";
             const folderPath = htmlEncode(bookmarkFolders[b.parentId].title || "");
             additional = `<span class=omnibar_folder>@ ${self.highlight(rxp, folderPath)}</span>`;
             uid = "B" + b.id;
@@ -420,10 +420,10 @@ function createOmnibar(front, clipboard) {
         var li = createElementWithContent('li', `
             <div class="logo-wrapper">
                 <div class="logo">
-                    ${isUrl ? `<img src="${b.favIconUrl}" />` : `<span class="material-icons">public</span>`}
+                    ${isUrl ? `<img src="${b.favIconUrl}" />` : `<span class="material-symbols-outlined">public</span>`}
                 </div>
                 <div class="icon-overlay">
-                    <span class="material-icons">${type}</span>
+                    <span class="material-symbols-outlined">${type}</span>
                 </div>
             </div>`);
         li.appendChild(createElementWithContent('div',
@@ -431,8 +431,7 @@ function createOmnibar(front, clipboard) {
              <div class="url">${self.highlight(rxp, htmlEncode(safeDecodeURIComponent(b.url)))}</div>`, { "class": "text-container" }));
         if(type ==="tab"){
             li.appendChild(createElementWithContent('div', `
-                Switch to Tab
-                <span class="material-icons">arrow_forward</span>
+                <span class="material-symbols-outlined">tab_move</span>
             `, { "class": "switch-tab" }));
         }     
         li.uid = uid;
@@ -698,7 +697,7 @@ function createOmnibar(front, clipboard) {
             });
         });
     }));
-    self.addHandler('URLs', OpenURLs(fnSearchTypeHtml('public'), self, () => {
+    self.addHandler('URLs', OpenURLs(fnPromptIndicatorHtml('public'), self, () => {
         return new Promise((resolve, reject) => {
             RUNTIME('getTabs', {
                 queryInfo: runtime.conf.omnibarTabsQuery
@@ -720,14 +719,14 @@ function createOmnibar(front, clipboard) {
             });
         });
     }));
-    self.addHandler('RecentlyClosed', OpenURLs(fnSearchTypeHtml('tab_recent'), self, () => {
+    self.addHandler('RecentlyClosed', OpenURLs(fnPromptIndicatorHtml('tab_recent'), self, () => {
         return new Promise((resolve, reject) => {
             RUNTIME('getRecentlyClosed', null, function(response) {
                 resolve(filterByTitleOrUrl(response.urls, self.input.value));
             });
         });
     }));
-    self.addHandler('TabURLs', OpenURLs(fnSearchTypeHtml('tab'), self, () => {
+    self.addHandler('TabURLs', OpenURLs(fnPromptIndicatorHtml('tab'), self, () => {
         return new Promise((resolve, reject) => {
             RUNTIME('getTabURLs', null, function(response) {
                 resolve(filterByTitleOrUrl(response.urls, self.input.value));
@@ -750,7 +749,7 @@ function createOmnibar(front, clipboard) {
 
 function OpenBookmarks(omnibar) {
     var self = {
-        prompt: fnSearchTypeHtml('bookmarks'),
+        prompt: fnPromptIndicatorHtml('hotel_class'),
         inFolder: []
     };
 
@@ -903,7 +902,7 @@ function OpenBookmarks(omnibar) {
 function AddBookmark(omnibar) {
     var self = {
         focusFirstCandidate: true,
-        prompt: fnSearchTypeHtml('bookmark_manager')
+        prompt: fnPromptIndicatorHtml('folder_special')
     }, folders, origFFC;
 
     self.onOpen = function(arg) {
@@ -916,7 +915,7 @@ function AddBookmark(omnibar) {
             RUNTIME("getBookmark", null, function(resp) {
                 if (resp.bookmarks.length) {
                     var b = resp.bookmarks[0];
-                    setSanitizedContent(omnibar.promptSpan, fnSearchTypeHtml('bookmark_manager'));
+                    setSanitizedContent(omnibar.promptSpan, fnPromptIndicatorHtml('folder_special'));
                     omnibar.resultsDiv.querySelector('li.focused').classList.remove('focused');
                     omnibar.focusItem(`li[folder="${b.parentId}"]`);
                 }
