@@ -1,5 +1,7 @@
 import {
     filterByTitleOrUrl,
+    regexFromString,
+    safeDecodeURI
 } from '../content_scripts/common/utils.js';
 import fuzzysort from 'fuzzysort';
 
@@ -1006,20 +1008,12 @@ function start(browser) {
             });
         });
     };
-    // function filterBookmarksByQuery(bookmarks, query, caseSensitive) {
-    //     return bookmarks.filter(function(b) {
-    //         var title = b.title, url = b.url;
-    //         if (!caseSensitive) {
-    //             title = title.toLowerCase();
-    //             url = url && url.toLowerCase();
-    //             query = query.toLowerCase();
-    //         }
-    //         return title.indexOf(query) !== -1 || (url && url.indexOf(query) !== -1);
-    //     });
-    // }
+
+    
 
     function getBookmarksWithConcatenatedTitles(tree, parentTitle = '') {
         let bookmarksList = [];
+        let bookmarksMap = new Map();
       
         // Traverse the tree
         for (let node of tree) {
@@ -1027,60 +1021,142 @@ function start(browser) {
           if (node.type === 'folder' && node.children) {
             // Recursively process child nodes, passing the current folder title as parent
             let folderTitle = parentTitle ? parentTitle + ' - ' + node.title : node.title;
-            bookmarksList = bookmarksList.concat(getBookmarksWithConcatenatedTitles(node.children, folderTitle));
+            const {bookmarksList: bookmarksListFolder, bookmarksMap: bookmarksMapFolder} = getBookmarksWithConcatenatedTitles(node.children, folderTitle)
+            bookmarksList = bookmarksList.concat(bookmarksListFolder);
+            bookmarksMap = new Map([...bookmarksMap, ...bookmarksMapFolder]);
           }
       
           // If the node is a bookmark, add it to the list with the concatenated title
           if (node.type === 'bookmark') {
-            bookmarksList.push({
+            const bookmark = {
                 ...node,
               fullPathTitle: parentTitle ? parentTitle + ' - ' + node.title : node.title
-            });
+            }
+            bookmarksList.push(bookmark);
+            bookmarksMap.set(node.url, bookmark);
           }
         }
       
-        return bookmarksList;
+        return {
+            bookmarksList,
+            bookmarksMap
+        };
       }
 
-    self.getBookmarks = function(message, sender, sendResponse) {
+      function filterAndOrderTabs(tabs, message, tab) {
+        if (tabs.length > message.tabsThreshold && conf.tabsMRUOrder) {
+            // only remove current tab when tabsMRUOrder is enabled.
+            tabs = tabs.filter(function (b) {
+                return b.id !== tab.id;
+            });
+            tabs.sort(function (x, y) {
+                // Shift tabs without "last access" data to the end
+                var a = tabActivated[x.id];
+                var b = tabActivated[y.id];
 
+                if (!isFinite(a) && !isFinite(b)) {
+                    return 0;
+                }
+
+                if (!isFinite(a)) {
+                    return 1;
+                }
+
+                if (!isFinite(b)) {
+                    return -1;
+                }
+
+                return b - a;
+            });
+        }
+        return tabs;
+    }
+
+    //CUSTOMIZED
+    self.omniSearch = function(message, sender, sendResponse) {
+        var tab = sender.tab;
+        var queryInfo = message.queryInfo || {};
+        //get tabs
+        chrome.tabs.query(queryInfo, function(tabs) {
+            tabs = filterAndOrderTabs(tabs, message, tab);
+            //get bookmarks
+            chrome.bookmarks.getTree(function(tree) {   
+                const {bookmarksMap} = getBookmarksWithConcatenatedTitles(tree);
+
+                const filteredTabs = tabs.filter(tab => {
+
+                    //add bookmark to tab if it exists  
+                    //remove bookmark from map if it exists
+                    if(bookmarksMap.has(tab.url)) {
+                        tab.bookmark = bookmarksMap.get(tab.url);
+                        bookmarksMap.delete(tab.url);
+                    }
+                    
+                    if(message.query) {
+                        var rxp = regexFromString(message.query, false);
+
+                        // verify if this filter is needed
+                        // if(tab.bookmark) {
+                        //     return rxp.test(tab.bookmark.fullPathTitle);
+                        // }else{
+                        //     return rxp.test(tab.title) || rxp.test(safeDecodeURI(tab.url)));
+                        // }
+
+                        return rxp.test(tab.title) || rxp.test(safeDecodeURI(tab.url)) || rxp.test(tab.bookmark?.fullPathTitle);
+                    } 
+                     
+                    return true;
+                });
+
+                //transform bookmarks map to list 
+                const bookmarksList = [...bookmarksMap.values()];
+                //get top sites
+                self.getTopSites(message, sender, function({urls: topSites}) {
+                    const urls = [
+                        ...filteredTabs,
+                        ...topSites
+                    ];
+
+                    const bookmarks = fuzzysort.go(message.query, bookmarksList, {key: 'fullPathTitle', limit: 100, threshold: 0.5}).map(result=>result.obj);
+                    var requestCount = (message.maxResults - urls.length) || 100;
+                    var maxResults = requestCount - urls.length;
+
+                    if (maxResults > 0) {
+                        //get history
+                        _getHistory(message.query || "", maxResults,  function(historyItems) {                          
+                            _response(message, sendResponse, {
+                                groupedUrls:{
+                                    filteredTabs,
+                                    topSites,
+                                    bookmarks,
+                                    historyItems
+                                }
+                            });
+                        }, true);
+                    } else {
+                        _response(message, sendResponse, {
+                            urls: [
+                                ...urls,
+                                ...bookmarks,
+                            ].slice(0, requestCount),
+                        });
+                    }
+
+                });
+            });
+        }); 
+    };
+
+    self.getBookmarks = function(message, sender, sendResponse) {
+        //CUSTOMIZED
         chrome.bookmarks.getTree(function(tree) {
-            const allBookmarks = getBookmarksWithConcatenatedTitles(tree);
-            const bookmarks =fuzzysort.go(message.query, allBookmarks, {key: 'fullPathTitle', limit: 100, threshold: 0.5}).map(result=>result.obj);
+            const {bookmarksList} = getBookmarksWithConcatenatedTitles(tree);
+            const bookmarks =fuzzysort.go(message.query, bookmarksList, {key: 'fullPathTitle', limit: 100, threshold: 0.5}).map(result=>result.obj);
             console.log('filtered', bookmarks);
             _response(message, sendResponse, {
                 bookmarks
             });
         });
-
-        
-
-
-        // if (message.parentId) {
-        //     chrome.bookmarks.getSubTree(message.parentId, function(tree) {
-        //         var bookmarks = tree[0].children;
-        //         if (message.query && message.query.length) {
-        //             bookmarks = filterBookmarksByQuery(bookmarks, message.query, message.caseSensitive);
-        //         }
-        //         _response(message, sendResponse, {
-        //             bookmarks: bookmarks
-        //         });
-        //     });
-        // } else {
-        //     if (message.query && message.query.length) {
-        //         chrome.bookmarks.search(message.query, function(tree) {
-        //             _response(message, sendResponse, {
-        //                 bookmarks: filterBookmarksByQuery(tree, message.query, message.caseSensitive)
-        //             });
-        //         });
-        //     } else {
-        //         chrome.bookmarks.getTree(function(tree) {
-        //             _response(message, sendResponse, {
-        //                 bookmarks: tree[0].children
-        //             });
-        //         });
-        //     }
-        // }
     };
     self.getHistory = function(message, sender, sendResponse) {
         _getHistory(message.query || "", message.maxResults || 100, function(tree) {
@@ -1094,6 +1170,7 @@ function start(browser) {
             chrome.history.addUrl({url: h});
         });
     };
+
     function normalizeURL(url) {
         if (!/^view-source:|^javascript:/.test(url) && /^(?:https?:\/\/)?(?:[^@\/\n]+@)?(?:www\.)?([^:\/\n]+)/im.test(url)) {
             if (/^[\w-]+?:/i.test(url)) {

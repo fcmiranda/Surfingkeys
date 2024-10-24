@@ -6,6 +6,7 @@ import {
     attachFaviconToImgSrc,
     constructSearchURL,
     createElementWithContent,
+    filterByName,
     filterByTitleOrUrl,
     getBrowserName,
     htmlEncode,
@@ -28,7 +29,7 @@ const fnIconHtml = icon => icon ? `<span class="material-symbols-outlined">${ico
 
 function createOmnibar(front, clipboard) {
     var self = new Mode("Omnibar");
-
+    
     self.addEventListener('keydown', function(event) {
         if (event.sk_keyName.length) {
             Mode.handleMapKey.call(self, event);
@@ -393,7 +394,7 @@ function createOmnibar(front, clipboard) {
 
     self.createURLItem = function(b, rxp) {
         b.title = (b.title && b.title !== "") ? b.title : safeDecodeURI(b.url);
-        var type = "", additional = "", uid = b.uid;
+        var type = "", isTab = false, additional = "", uid = b.uid;
 
         const isUrl = b.url.startsWith("http://") || b.url.startsWith("https://");
         if(isUrl) {
@@ -407,14 +408,24 @@ function createOmnibar(front, clipboard) {
             uid = "H" + b.url;
         } else if(b.hasOwnProperty('dateAdded')) {
             type = "grade";
-            const folderPath = htmlEncode(bookmarkFolders[b.parentId].title || "");
-            additional = `<span class=omnibar_folder>@ ${self.highlight(rxp, folderPath)}</span>`;
-            uid = "B" + b.id;
+            uid = "B" + b.id;          
         } else if(b.hasOwnProperty('width')) {
             type = "tab";
             uid = "T" + b.windowId + ":" + b.id;
+            isTab = true;
         } else if(b.type && b.type.length === 2 && b.type.charCodeAt(0) > 255) {
             type = b.type;
+        }
+
+        if(b.bookmark){
+            b.title = b.bookmark.title;
+            b.parentId = b.bookmark.parentId;
+            type = "grade";
+        }
+
+        if(b.parentId){
+            const folderPath = htmlEncode(bookmarkFolders[b.parentId].title || "");
+            additional = `<span class=omnibar_folder>@ ${self.highlight(rxp, folderPath)}</span>`;
         }
 
         var li = createElementWithContent('li', `
@@ -429,11 +440,13 @@ function createOmnibar(front, clipboard) {
         li.appendChild(createElementWithContent('div',
             `<div class="title">${self.highlight(rxp, htmlEncode(b.title))} ${additional}</div>
              <div class="url">${self.highlight(rxp, htmlEncode(safeDecodeURIComponent(b.url)))}</div>`, { "class": "text-container" }));
-        if(type ==="tab"){
+        
+       if(isTab){
             li.appendChild(createElementWithContent('div', `
                 <span class="material-symbols-outlined">tab_move</span>
             `, { "class": "switch-tab" }));
         }     
+        
         li.uid = uid;
         li.url = b.url;
         return li;
@@ -521,9 +534,23 @@ function createOmnibar(front, clipboard) {
                 li = createElementWithContent('li', `<div class="title">${fnIconHtml('folder_special')}${self.highlight(rxp, b.title)}</div>`);
                 li.folder_name = b.title;
                 li.folderId = b.id;
+            } else if(query.length && b.hasOwnProperty('cmd')){
+                li = createElementWithContent('li', `
+                    <div class="logo-wrapper">
+                        <div class="logo">
+                          ${fnIconHtml(b.icon)}
+                        </div>
+                    </div>${b.cmd}<span class=annotation>${htmlEncode(b.annotation)}</span>`);
+
+                // li = createElementWithContent('li', `${fnIconHtml(b.icon)}${b.cmd}<span class=annotation>${htmlEncode(b.annotation)}</span>`);
+                li.cmd = b.cmd;
+
+       
             }
             return li;
         });
+
+
     }
 
     var _savedAargs;
@@ -584,6 +611,12 @@ function createOmnibar(front, clipboard) {
     self.openFocused = function() {
         var ret = false, fi = self.resultsDiv.querySelector('li.focused');
         var url;
+
+        if(fi.cmd){
+            self.commandExecute(fi.cmd)
+            return;
+        }
+
         if (fi) {
             url = fi.url;
         } else {
@@ -694,6 +727,42 @@ function createOmnibar(front, clipboard) {
                 sortByMostUsed: runtime.conf.historyMUOrder
             }, function(response) {
                 resolve(response.history);
+            });
+        });
+    }));
+    self.addHandler('OmniSearch', OpenURLs(fnPromptIndicatorHtml('hub'), self, () => {
+        return new Promise((resolve, reject) => {
+            console.log('//TODO:remove','OmniSearch..')
+            self.listBookmarkFolders(function() {
+                RUNTIME('omniSearch', {
+                    maxResults: self.getHistoryCacheSize(),
+                    query: self.input.value
+                } , function(response) {
+                    const commands = filterByName(self.commandList || [], self.input.value)
+
+                    let results = []
+
+                    if(response.groupedUrls) {
+                        const {
+                            filteredTabs,
+                            topSites,
+                            bookmarks,
+                            historyItems
+                        } = response.groupedUrls;            
+    
+                        results = [
+                            ...filteredTabs,
+                            ...commands,
+                            ...topSites,
+                            ...bookmarks,
+                            ...historyItems
+                        ];
+                    }else {
+                        results = response.url
+                    }
+                    
+                    resolve(results);
+                });
             });
         });
     }));
@@ -1346,7 +1415,6 @@ function Commands(omnibar, front) {
         focusFirstCandidate: true,
         prompt: fnIconHtml('terminal'),
     }, items = {};
-
     var historyInc = 0;
 
     self.onOpen = function() {
@@ -1431,12 +1499,16 @@ function Commands(omnibar, front) {
         }
     }
 
+    omnibar.commandExecute = execute;
+
     front._actions['executeCommand'] = function (message) {
         execute(message.cmdline);
     };
 
     omnibar.command = function ({cmd, annotation, icon}, jscode, ) {
         var cmd_code = {
+            name: cmd,
+            cmd,
             code: jscode, 
             icon
         };
@@ -1444,6 +1516,8 @@ function Commands(omnibar, front) {
         cmd_code.feature_group = ag.feature_group;
         cmd_code.annotation = ag.annotation;
         items[cmd] = cmd_code;
+
+        omnibar.commandList= [...omnibar.commandList || [], cmd_code];
     };
 
     return self;

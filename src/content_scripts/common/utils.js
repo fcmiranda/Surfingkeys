@@ -851,6 +851,13 @@ function safeDecodeURIComponent(url) {
     }
 }
 
+function filterByName(commands, query) {
+    return commands.filter(command => {
+        var rxp = regexFromString(query, false);
+        return rxp.test(command.name);
+    });
+}
+
 function filterByTitleOrUrl(urls, query) {
     if (query && query.length) {
         var rxp = regexFromString(query, false);
@@ -915,6 +922,7 @@ export {
     dispatchMouseEvent,
     dispatchSKEvent,
     filterAncestors,
+    filterByName,
     filterByTitleOrUrl,
     filterInvisibleElements,
     filterOverlapElements,

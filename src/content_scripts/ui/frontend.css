@@ -243,6 +243,7 @@ body {
     align-items: center;
     transition: box-shadow 0.3s ease;
     box-shadow: 15px 0px 30px rgba(0, 0, 0, 0.3);
+    min-width: 2rem;
 }
 
 
@@ -288,6 +289,8 @@ body {
 
 #sk_omnibarSearchResult li div.title {
     text-align: left;
+    overflow: hidden;
+    text-overflow: ellipsis;
 }
 
 #sk_omnibarSearchResult li div.url {
