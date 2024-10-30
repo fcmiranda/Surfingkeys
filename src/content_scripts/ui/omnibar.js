@@ -571,7 +571,7 @@ function createOmnibar(front, clipboard) {
             ui.insertBefore(self.resultsDiv, document.querySelector("#sk_omnibarSearchArea"));
         } else {
             self.resultsDiv.remove();
-            ui.append(self.resultsDiv);
+            document.querySelector("#sk_omnibar_container").append(self.resultsDiv);
         }
 
         self.tabbed = (args.tabbed !== undefined) ? args.tabbed : true;
