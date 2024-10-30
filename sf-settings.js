@@ -14,3 +14,27 @@ api.mapkey("cs", '#lcustom', function() {
     api.Hints.dispatchMouseClick(selector); 
     api.highlightElement(selector, 200);
 }, {domain: /teams.microsoft.com/i});
+
+
+
+pi.mapkey('n', 'teams', function() {
+
+const teamsSelectors = [
+
+'div[id]="message-body"]',
+
+'div[id="new-message"]',
+
+'div[data-is-focusable="true"].ui-tree title', '#ms-searchux-input',
+
+'.ui-tree title [aria-selected="true"]'
+
+1;
+
+api.Hints.create(teamsSelectors.join(), function(element) {
+
+element.focus();
+
+});
+
+, {domain: /teams.microsoft.com/i});
