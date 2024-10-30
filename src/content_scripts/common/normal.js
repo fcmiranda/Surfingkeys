@@ -462,7 +462,7 @@ function createNormal(insert) {
         }
     }
 
-    self.highlightElement = function (elm) {
+    self.highlightElement = function (elm, duration = 200) {
         var rc;
         if (document.scrollingElement === elm) {
             rc = {
@@ -475,7 +475,7 @@ function createNormal(insert) {
             rc = elm.getBoundingClientRect();
         }
         dispatchSKEvent('highlightElement', {
-            duration: 200,
+            duration,
             rect: {
                 top: rc.top,
                 left: rc.left,

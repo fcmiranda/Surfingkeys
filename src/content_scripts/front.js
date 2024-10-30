@@ -167,7 +167,7 @@ function createFront(insert, normal, hints, visual, browser) {
         });
     });
 
-    var frameElement = createElementWithContent('div', 'Hi, I\'m here now!', {id: "sk_frame"});
+    var frameElement = createElementWithContent('div', '', {id: "sk_frame"});
     frameElement.fromSurfingKeys = true;
     function highlightElement(sn) {
         document.documentElement.append(frameElement);
