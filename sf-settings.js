@@ -1,65 +1,7 @@
-api.mapkey('n', 'Show me the money', function() {
-    api.Front.showPopup('teste!!!');
-    api.Front.showPopup('teste!!!');
-});
+api.map('<Ctrl-j>', 'E'); //go one tab left,
+api.map('<Ctrl-k>', 'R'); //go one tab right,
+api.map('<Ctrl-h>', 'S'); //go back in history
+api.map('<Ctrl-l>', 'D'); //go foward in history
+api.cmap('<Ctrl-j>', '<Tab>'); //previous result item
+api.cmap('<Ctrl-k>', '<Shift-Tab>'); //next result item
 
-api.map('<Ctrl-j>', 'E');
-api.map('<Ctrl-k>', 'R');
-api.map('<Ctrl-h>', 'S');
-api.map('<Ctrl-l>', 'D');
-api.cmap('<Ctrl-j>', '<Tab>');
-api.cmap('<Ctrl-k>', '<Shift-Tab>');
-
-// customise theme
-settings.theme = `
-  .sk_theme {
-    font-family: Input Sans Condensed, Charcoal, sans-serif;
-    font-size: 10pt;
-    background: #24272e;
-    color: #abb2bf;
-  }
-  .sk_theme tbody {
-    color: #fff;
-  }
-  .sk_theme input {
-    color: #d0d0d0;
-  }
-  .sk_theme .url {
-    color: #61afef;
-  }
-  .sk_theme .annotation {
-    color: #56b6c2;
-  }
-  .sk_theme .omnibar_highlight {
-    color: #528bff;
-  }
-  .sk_theme .omnibar_timestamp {
-    color: #e5c07b;
-  }
-  .sk_theme .omnibar_visitcount {
-    color: #98c379;
-  }
-  .sk_theme #sk_omnibarSearchResult>ul>li:nth-child(odd) {
-    background: #303030;
-  }
-  .sk_theme #sk_omnibarSearchResult>ul>li.focused {
-    background: #3e4452;
-  }
-  .sk_theme .separator {
-    color: white;
-  }
-  #sk_omnibar {
-    width: 50%;
-    left: 25%;
-  }
-  #sk_status, #sk_find {
-    font-size: 16pt;
-    right: auto;
-  }
-`;
-
-/**
- * Register inline query.
- *
- * @link https://github.com/brookhong/Surfingkeys/wiki/Register-inline-query
- */
