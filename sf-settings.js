@@ -20,8 +20,8 @@ api.mapkey('n', 'teams', function() {
     const teamsSelectors = [
         'div[id]="message-body"]',
         'div[id="new-message"]',
-        'div[data-is-focusable="true"].ui-tree title', '#ms-searchux-input',
-        '.ui-tree title [aria-selected="true"]'
+        'div[data-is-focusable="true"].ui-tree_title', '#ms-searchux-input',
+        '.ui-tree_title [aria-selected="true"]'
     ];
     api.Hints.create(teamsSelectors.join(), function(element) {
         element.focus();
