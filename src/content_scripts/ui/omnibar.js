@@ -25,6 +25,7 @@ import { RUNTIME, runtime } from '../common/runtime.js';
 
 
 const fnPromptIndicatorHtml = (contextIcon, actionIcon ='search') => `<div class="icon-container"><span class="material-symbols-outlined context-icon">${contextIcon}</span><span class="material-symbols-outlined action-icon">${actionIcon}</span></div>`
+const fnPromptOmni = (contextIcon, actionIcon ='') => `<div class="icon-container"><span class="material-symbols-outlined context-icon context-icon-omni">${contextIcon}</span><span class="material-symbols-outlined action-icon-omni action-icon">${actionIcon}</span></div>`
 const fnIconHtml = icon => icon ? `<span class="material-symbols-outlined">${icon}</span>` : '' ;
 
 function createOmnibar(front, clipboard) {
@@ -612,7 +613,7 @@ function createOmnibar(front, clipboard) {
         var ret = false, fi = self.resultsDiv.querySelector('li.focused');
         var url;
 
-        if(fi.cmd){
+        if(fi?.cmd){
             self.commandExecute(fi.cmd)
             return;
         }
@@ -651,8 +652,10 @@ function createOmnibar(front, clipboard) {
     self.listResults = function (items, renderItem) {
         setSanitizedContent(self.resultsDiv, "");
         if (!items || items.length === 0) {
+            document.querySelector("#sk_omnibarSearchArea").classList.add("empty")
             return;
         }
+        document.querySelector("#sk_omnibarSearchArea").classList.remove("empty");
         if (runtime.conf.omnibarPosition === "bottom") {
             items.reverse();
         }
@@ -670,6 +673,10 @@ function createOmnibar(front, clipboard) {
                             },
                             url: li.url
                         });
+                    
+                    } else if(li?.cmd){
+                        self.commandExecute(li.cmd)
+                        return;
                     } else {
                         self.input.value = li.query;
                         self.input.focus();
@@ -730,7 +737,7 @@ function createOmnibar(front, clipboard) {
             });
         });
     }));
-    self.addHandler('OmniSearch', OpenURLs(fnPromptIndicatorHtml('hub'), self, () => {
+    self.addHandler('OmniSearch', OpenURLs(fnPromptOmni('bolt'), self, () => {
         return new Promise((resolve, reject) => {
             console.log('//TODO:remove','OmniSearch..')
             self.listBookmarkFolders(function() {

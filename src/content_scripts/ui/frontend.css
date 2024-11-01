@@ -35,14 +35,19 @@ body {
     position: absolute;
     height: 100%;
     width: 100%;
-    /* background-image: conic-gradient(from var(--angle), #ff4545, #00ff99, #006aff, #ff0095, #ff4545); */
+    background-image: conic-gradient(from var(--angle), #ff4545, #00ff99, #006aff, #ff0095, #ff4545);
     background: conic-gradient(from var(--angle), #3b84f2, #060c21, #ce11d1, #060c21, #3b84f2);
+    background: conic-gradient(from var(--angle), #ff5f6d, #ffc371, #ff5f6d, #1c1b1f, #ff5f6d);
+    background: conic-gradient(from var(--angle), #ff00c1, #3d009d, #04d9ff, #3d009d, #ff00c1);
+    background: conic-gradient(from var(--angle), #00213e, #005792, #00aaff, #005792, #00213e);
+    background: conic-gradient(from var(--angle), #f2f2f2, #c4c4c4, #6e6e6e, #2b2b2b, #f2f2f2);
+    background: conic-gradient(from var(--angle), #1b003a, #5e17eb, #eb4e86, #3a0088, #1b003a);
     top: 50%;
     left: 50%;
     translate: -50% -50%;
     z-index: -1;
     padding: 1px;
-    border-radius: 10px;
+    border-radius: 24px;
     animation: 10s spin linear infinite;
 }
 
@@ -69,8 +74,8 @@ body {
     max-height: 80%;
     z-index: 2147483000;
     max-width: 40%;
-    left: 25%;
-    top: 25%;
+    left: 27%;
+    top: 23%;
     color: var(--omnibar-text-color);
     padding: 3rem;
     /* box-shadow: 0px 2px 10px rgba(0, 0, 0, 0.8); */
@@ -87,14 +92,20 @@ body {
 
 #sk_omnibarSearchArea {
     display: flex;
-    padding: 12px 16px;
+    padding: 8px 18px;
     border-bottom: 1px solid var(--border-color);
     align-items: center;
     border-bottom: 1px solid #99999900;
     background: var(--omnibar-inner-background-color);
-    border-radius: 10px 10px 0 0;
+    border-radius: 24px 24px 0 0;
     margin-bottom: 1px;
 }
+
+#sk_omnibarSearchArea.empty {
+    border-radius: 24px;
+}
+
+
 
 #sk_omnibarSearchArea .prompt {
     width: 32px;
@@ -165,7 +176,7 @@ body {
     padding: 0rem 0.6rem;
     padding-top: 0.6rem;
     background: var(--omnibar-inner-background-color);
-    border-radius: 0 0 10px 10px;
+    border-radius: 0 0 24px 24px;
 }
 
 #sk_omnibarSearchResult:empty {
