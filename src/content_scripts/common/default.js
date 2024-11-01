@@ -478,12 +478,12 @@ module.exports = function(api) {
     }
 
     if (!getBrowserName().startsWith("Safari")) {
-        mapkey('aa', '#8Open omnibar', function() {
+        mapkey('t', '#8Open omnibar', function() {
             Front.openOmnibar({type: "OmniSearch"});
         });
-        mapkey('t', '#8Open a URL', function() {
-            Front.openOmnibar({type: "URLs"});
-        });
+        // mapkey('aa', '#8Open a URL', function() {
+        //     Front.openOmnibar({type: "URLs"});
+        // });
         mapkey('go', '#8Open a URL in current tab', function() {
             Front.openOmnibar({type: "URLs", tabbed: false});
         });
