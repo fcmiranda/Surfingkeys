@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Paletas de Bordas e Fundos</title>
+    <style>
+        @property --angle {
+            syntax: "<angle>";
+            initial-value: 0deg;
+            inherits: false;
+        }
+
+        @keyframes spin {
+            from {
+                --angle: 0deg;
+            }
+
+            to {
+                --angle: 360deg;
+            }
+        }
+
+        body {
+            background-color: rgb(190, 190, 190);
+        }
+
+        /* Estilos gerais para os contêineres */
+        .container {
+            width: 300px;
+            height: 300px;
+            margin: 20px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            border-radius: 15px;
+            color: #ffffff;
+            /* Ajuste conforme o fundo da borda */
+            font-size: 1.2em;
+            text-align: center;
+            animation: 10s spin linear infinite;
+        }
+
+        /* Pôr do Sol Neon */
+        .container.sunset {
+            background-color: #fff1e01b;
+            /* Fundo */
+            border: 5px solid;
+            border-image: conic-gradient(from var(--angle), #ff5f6d, #ffc371, #ff5f6d, #1c1b1f, #ff5f6d) 1;
+        }
+
+        /* Galaxy */
+        .container.galaxy {
+            background-color: #1a002d;
+            /* Fundo */
+            border: 5px solid;
+            border-image: conic-gradient(from var(--angle), #1b003a, #5e17eb, #eb4e86, #3a0088, #1b003a) 1;
+        }
+
+        /* Oceano Profundo */
+        .container.ocean {
+            background-color: #e6f7ff;
+            /* Fundo */
+            border: 5px solid;
+            border-image: conic-gradient(from var(--angle), #00213e, #005792, #00aaff, #005792, #00213e) 1;
+        }
+
+        /* Cyberpunk */
+        .container.cyberpunk {
+            background-color: #121212;
+            /* Fundo */
+            border: 5px solid;
+            border-image: conic-gradient(from var(--angle), #ff00c1, #3d009d, #04d9ff, #3d009d, #ff00c1) 1;
+        }
+
+        /* Minimalista Chique */
+        .container.minimal {
+            background-color: #f7f7f7;
+            /* Fundo */
+            border: 5px solid;
+            border-image: conic-gradient(from var(--angle), #f2f2f2, #c4c4c4, #6e6e6e, #2b2b2b, #f2f2f2) 1;
+            color: #333;
+            /* Ajuste de cor do texto para contraste */
+        }
+
+        /* Flex container para alinhamento centralizado */
+        .flex-container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 20px;
+            justify-content: center;
+            padding: 20px;
+        }
+    </style>
+</head>
+
+<body>
+
+    <h1 style="text-align: center;">Paletas de Bordas e Fundos</h1>
+    <div class="flex-container">
+        <div class="container sunset">Pôr do Sol Neon</div>
+        <div class="container galaxy">Galaxy</div>
+        <div class="container ocean">Oceano Profundo</div>
+        <div class="container cyberpunk">Cyberpunk</div>
+        <div class="container minimal">Minimalista Chique</div>
+    </div>
+
+</body>
+
+</html>
