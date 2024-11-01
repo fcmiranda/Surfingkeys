@@ -1018,7 +1018,8 @@ function start(browser) {
         // Traverse the tree
         for (let node of tree) {
           // Check if the node is a folder and has children
-          if (node.type === 'folder' && node.children) {
+          const isFolder = !node.url && node.children;
+          if (isFolder) {
             // Recursively process child nodes, passing the current folder title as parent
             let folderTitle = parentTitle ? parentTitle + ' - ' + node.title : node.title;
             const {bookmarksList: bookmarksListFolder, bookmarksMap: bookmarksMapFolder} = getBookmarksWithConcatenatedTitles(node.children, folderTitle)
@@ -1027,7 +1028,7 @@ function start(browser) {
           }
       
           // If the node is a bookmark, add it to the list with the concatenated title
-          if (node.type === 'bookmark') {
+          if (!isFolder) {
             const bookmark = {
                 ...node,
               fullPathTitle: parentTitle ? parentTitle + ' - ' + node.title : node.title
