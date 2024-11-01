@@ -781,6 +781,7 @@ function createAPI(clipboard, insert, normal, hints, visual, front, browser) {
         insertJS,
         isElementPartiallyInViewport,
         getBrowserName,
+        isDomainApplicable: _isDomainApplicable,
         getClickableElements,
         getFormData,
         lmap,

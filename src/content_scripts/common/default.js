@@ -3,6 +3,7 @@ module.exports = function(api) {
         addSearchAlias,
         cmap,
         getBrowserName,
+        isDomainApplicable,
         getFormData,
         map,
         mapkey,
@@ -481,6 +482,13 @@ module.exports = function(api) {
         mapkey('t', '#8Open omnibar', function() {
             Front.openOmnibar({type: "OmniSearch"});
         });
+
+        console.log('hereeee!')
+
+        if(isDomainApplicable(/graypage.com/i)){
+            Front.openOmnibar({type: "OmniSearch"});
+        }
+
         // mapkey('aa', '#8Open a URL', function() {
         //     Front.openOmnibar({type: "URLs"});
         // });
