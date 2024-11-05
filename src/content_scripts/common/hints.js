@@ -26,19 +26,42 @@ function createHints(insert, normal) {
     hintsHost.className = "surfingkeys_hints_host";
     hintsHost.attachShadow({ mode: 'open' });
     var hintsStyle = createElementWithContent('style', `
-div {
-    position: absolute;
-    display: block;
-    font-size: 8pt;
-    font-weight: bold;
-    padding: 0px 2px 0px 2px;
-    background: -webkit-gradient(linear, left top, left bottom, color-stop(0%,#FFF785), color-stop(100%,#FFC542));
-    color: #000;
-    border: solid 1px #C38A22;
-    border-radius: 3px;
-    box-shadow: 0px 3px 7px 0px rgba(0, 0, 0, 0.3);
-    width: auto;
+
+@property --angle {
+    syntax: "<angle>";
+    initial-value: 0deg;
+    inherits: false;
 }
+
+@keyframes spin {
+    from {
+        --angle: 0deg;
+    }
+
+    to {
+        --angle: 360deg;
+    }
+}
+
+div {
+    display: block;
+    width: auto;
+    justify-content: center;
+    align-items: center;
+    color: #ffffff;
+    text-align: center;
+    position: absolute;
+    animation: 10s spin linear infinite;
+    background-color: #202124a1;
+    border: 1px solid black;
+    border-radius: 24px;
+    padding: 0px 5px 0px 5px;
+    box-shadow: 0px 3px 7px 0px rgba(0, 0, 0, 0.3);
+    backdrop-filter: blur(10px);
+    font-size: 9pt;
+    font-family: "Roboto", Helvetica, Arial, sans-serif;
+}
+
 div:empty {
     display: none;
 }

@@ -483,10 +483,8 @@ module.exports = function(api) {
             Front.openOmnibar({type: "OmniSearch"});
         });
 
-        console.log('hereeee!')
-
-        if(isDomainApplicable(/graypage.com/i)){
-            Front.openOmnibar({type: "OmniSearch"});
+        if(isDomainApplicable(/newtab/i)){
+            Front.openOmnibar({type: "OmniSearch", tabbed: true});
         }
 
         // mapkey('aa', '#8Open a URL', function() {

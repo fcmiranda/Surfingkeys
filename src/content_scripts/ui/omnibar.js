@@ -26,6 +26,7 @@ import { RUNTIME, runtime } from '../common/runtime.js';
 
 const fnPromptIndicatorHtml = (contextIcon, actionIcon ='search') => `<div class="icon-container"><span class="material-symbols-outlined context-icon">${contextIcon}</span><span class="material-symbols-outlined action-icon">${actionIcon}</span></div>`
 const fnPromptOmni = (contextIcon, actionIcon ='') => `<div class="icon-container"><span class="material-symbols-outlined context-icon context-icon-omni">${contextIcon}</span><span class="material-symbols-outlined action-icon-omni action-icon">${actionIcon}</span></div>`
+const fnPromptBolt = `<span class="prompt"><span style="left: 10px;color: #72e0d1;font-size: 34px;" class="material-symbols-outlined">bolt</span><span style="left: 12px;position: absolute;color: #ed95d6;font-size: 29px;" class="material-symbols-outlined">bolt</span><span style="left: 14px;position: absolute;color: #f5d67b;font-size: 28px;" class="material-symbols-outlined">bolt</span></span>`;
 const fnIconHtml = icon => icon ? `<span class="material-symbols-outlined">${icon}</span>` : '' ;
 
 function createOmnibar(front, clipboard) {
@@ -737,7 +738,7 @@ function createOmnibar(front, clipboard) {
             });
         });
     }));
-    self.addHandler('OmniSearch', OpenURLs(fnPromptOmni('bolt'), self, () => {
+    self.addHandler('OmniSearch', OpenURLs(fnPromptBolt, self, () => {
         return new Promise((resolve, reject) => {
             console.log('//TODO:remove','OmniSearch..')
             self.listBookmarkFolders(function() {
