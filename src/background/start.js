@@ -1227,17 +1227,16 @@ function start(browser) {
                 code: url.substr(11)
             });
         } else {
-            if (message.tab.tabbed) {
-                if (sender.frameId !== 0 && chrome.extension.getURL("pages/frontend.html") === sender.url
+
+            if (sender.frameId !== 0 && chrome.extension.getURL("pages/frontend.html") === sender.url
                     || !sender.tab) {
-                    // if current call was made from Omnibar, the sender.tab may be stale,
-                    // as sender was bound when port was created.
-                    getActiveTab(function(tab) {
-                        openUrlInNewTab(tab, url, message);
-                    });
-                } else {
-                    openUrlInNewTab(sender.tab, url, message);
-                }
+                // if current call was made from Omnibar, the sender.tab may be stale,
+                // as sender was bound when port was created.
+                getActiveTab(function(tab) {
+                    openUrlInNewTab(tab, url, message);
+                });
+            } else if (message.tab.tabbed) {
+                openUrlInNewTab(sender.tab, url, message);
             } else {
                 chrome.tabs.update({
                     url: url,
