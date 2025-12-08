@@ -33,8 +33,22 @@ function filterByTitleOrUrl(urls, query, caseSensitive) {
     return urls;
 }
 
+/**
+ * Safely decode a URI, returning the original string if decoding fails
+ * @param {string} url - The URL to decode
+ * @returns {string} The decoded URL or original if decoding fails
+ */
+function safeDecodeURI(url) {
+    try {
+        return decodeURI(url);
+    } catch (e) {
+        return url;
+    }
+}
+
 export {
     LOG,
     filterByTitleOrUrl,
     regexFromString,
+    safeDecodeURI,
 }
