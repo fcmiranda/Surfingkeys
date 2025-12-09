@@ -1,0 +1,663 @@
+/**
+ * OmniSearch Frontend Styles
+ * 
+ * Refactored, modern styling for the omnibar with:
+ * - CSS custom properties for theming
+ * - Animated gradient border
+ * - Material Design icons support
+ * - Clean, modular structure
+ * 
+ * @module frontend-omni
+ */
+
+/* ==========================================================================
+   CSS Custom Properties (Theme Variables)
+   ========================================================================== */
+
+:root {
+    /* Colors */
+    --omnibar-bg-color: rgba(0, 0, 0, 0.7);
+    --omnibar-inner-background-color: #1c1f2b;
+    --omnibar-text-color: rgb(255, 255, 255);
+    --omnibar-text-color-transparent: rgba(255, 255, 255, 0.255);
+    --omnibar-secondary-text: #536471;
+    
+    /* Interactive States */
+    --omnibar-li-hover-color: rgba(255, 255, 255, 0.18);
+    --omnibar-li-focused-color: var(--primary-color);
+    
+    /* Borders & Accents */
+    --primary-color: #8a61fa;
+    --omnibar-border-color: #cfd9de;
+    --omnibar-border: 1px solid rgba(75, 75, 75);
+}
+
+/* ==========================================================================
+   Base Styles
+   ========================================================================== */
+
+body {
+    margin: 0;
+    font-family: "Roboto", Helvetica, Arial, sans-serif;
+    font-size: 14px;
+}
+
+/* ==========================================================================
+   Omnibar Container with Animated Border
+   ========================================================================== */
+
+#sk_omnibar_container {
+    border-radius: 8px;
+    position: relative;
+}
+
+/* Custom property for animation */
+@property --angle {
+    syntax: "<angle>";
+    initial-value: 0deg;
+    inherits: false;
+}
+
+/* Animated gradient border */
+#sk_omnibar_container::after,
+#sk_omnibar_container::before {
+    content: '';
+    position: absolute;
+    height: 100%;
+    width: 100%;
+    background: conic-gradient(
+        from var(--angle), 
+        #ff00c1, #3d009d, #04d9ff, #3d009d, #ff00c1
+    );
+    top: 50%;
+    left: 50%;
+    translate: -50% -50%;
+    z-index: -1;
+    padding: 1px;
+    border-radius: 24px;
+    animation: spin 10s linear infinite;
+}
+
+#sk_omnibar_container::before {
+    filter: blur(1.5rem);
+    opacity: 0.5;
+}
+
+@keyframes spin {
+    from { --angle: 0deg; }
+    to { --angle: 360deg; }
+}
+
+/* ==========================================================================
+   Main Omnibar
+   ========================================================================== */
+
+#sk_omnibar {
+    overflow: hidden;
+    position: fixed;
+    width: 80%;
+    max-height: 80%;
+    max-width: 40%;
+    left: 27%;
+    top: 13%;
+    z-index: 2147483000;
+    color: var(--omnibar-text-color);
+    padding: 3rem;
+}
+
+#sk_omnibar span.omnibar_highlight {
+    text-shadow: rgb(0, 0, 0) 0px 0px 1px;
+    font-weight: 800;
+}
+
+/* ==========================================================================
+   Search Area
+   ========================================================================== */
+
+#sk_omnibarSearchArea {
+    display: flex;
+    align-items: center;
+    padding: 8px 18px;
+    border-bottom: 1px solid #99999900;
+    background: var(--omnibar-inner-background-color);
+    border-radius: 24px 24px 0 0;
+    margin-bottom: 1px;
+}
+
+#sk_omnibarSearchArea.empty {
+    border-radius: 24px;
+}
+
+/* Prompt Icon Container */
+#sk_omnibarSearchArea .prompt {
+    width: 32px;
+    height: 32px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-right: 12px;
+}
+
+#sk_omnibarSearchArea .prompt .icon-container {
+    position: relative;
+    width: 2rem;
+    height: 2rem;
+    box-shadow: 15px 0px 30px rgba(0, 0, 0, 0.3);
+    border-radius: 15px;
+}
+
+#sk_omnibarSearchArea .prompt .icon-container span {
+    position: absolute;
+}
+
+#sk_omnibarSearchArea .prompt .icon-container span.context-icon {
+    box-shadow: 15px 0px 20px rgba(0, 0, 0, 0.3);
+    border-radius: 15px;
+    width: 30px;
+    height: 30px;
+}
+
+#sk_omnibarSearchArea .prompt .icon-container span.action-icon {
+    left: 20px;
+    top: 15px;
+    font-size: 16px;
+    text-shadow: rgb(0, 0, 0) 0 0 2px;
+}
+
+/* Search Input */
+#sk_omnibarSearchArea > input {
+    flex-grow: 1;
+    border: none;
+    font-size: 15px;
+    color: var(--omnibar-text-color);
+    outline: none;
+    background: transparent;
+}
+
+#sk_omnibarSearchArea .search-icon {
+    color: var(--omnibar-text-color);
+}
+
+/* ==========================================================================
+   Position Variants
+   ========================================================================== */
+
+.sk_omnibar_middle {
+    top: 10%;
+    border-radius: 4px;
+}
+
+.sk_omnibar_bottom {
+    bottom: 0;
+    border-radius: 4px 4px 0px 0px;
+}
+
+.sk_omnibar_bottom #sk_omnibarSearchArea {
+    margin: 0.2rem 1rem;
+}
+
+/* ==========================================================================
+   Search Results
+   ========================================================================== */
+
+#sk_omnibarSearchResult {
+    max-height: 60vh;
+    overflow: hidden;
+    padding: 0rem 0.6rem;
+    padding-top: 0.6rem;
+    background: var(--omnibar-inner-background-color);
+    border-radius: 0 0 24px 24px;
+}
+
+#sk_omnibarSearchResult:empty {
+    display: none;
+}
+
+#sk_omnibarSearchResult > ul {
+    padding: 0;
+    margin-top: 0;
+}
+
+.sk_omnibar_middle #sk_omnibarSearchResult > ul {
+    margin-top: 0;
+}
+
+.sk_omnibar_bottom #sk_omnibarSearchResult > ul {
+    margin-bottom: 0;
+}
+
+/* Result Item */
+#sk_omnibarSearchResult > ul > li {
+    display: flex;
+    align-items: center;
+    max-height: 600px;
+    overflow: hidden;
+    padding: 0;
+    min-height: 2rem;
+    border-radius: 15px;
+    gap: 5px;
+}
+
+#sk_omnibarSearchResult > ul > li:hover {
+    background-color: var(--omnibar-li-hover-color);
+}
+
+#sk_omnibarSearchResult > ul > li.focused {
+    background-color: var(--omnibar-li-focused-color);
+}
+
+/* Window Items */
+.sk_theme #sk_omnibarSearchResult > ul > li.window {
+    border: 2px solid #c7c7c773;
+    border-radius: 8px;
+    margin: 4px 0px;
+}
+
+.sk_theme #sk_omnibarSearchResult > ul > li.window.focused {
+    border: 2px solid #fff;
+}
+
+/* ==========================================================================
+   Result Item Logo/Favicon
+   ========================================================================== */
+
+#sk_omnibarSearchResult .logo-wrapper {
+    position: relative;
+    cursor: pointer;
+    transition: transform 0.3s ease;
+    width: 2rem;
+    height: 2rem;
+    margin-right: 1rem;
+}
+
+#sk_omnibarSearchResult .logo {
+    width: 100%;
+    height: 100%;
+    border-radius: 15px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    transition: box-shadow 0.3s ease;
+    box-shadow: 15px 0px 30px rgba(0, 0, 0, 0.3);
+    min-width: 2rem;
+}
+
+#sk_omnibarSearchResult .icon-overlay {
+    position: absolute;
+    color: var(--omnibar-text-color);
+    height: 16px;
+    width: 16px;
+    bottom: 0;
+    right: -8px;
+    text-shadow: rgb(0, 0, 0) 0 0 2px;
+}
+
+#sk_omnibarSearchResult .material-symbols-outlined {
+    font-size: 16px;
+}
+
+/* ==========================================================================
+   Result Item Content
+   ========================================================================== */
+
+#sk_omnibarSearchResult li .text-container {
+    flex-grow: 1;
+    display: flex;
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+}
+
+#sk_omnibarSearchResult li .icon {
+    margin-right: 0.5rem;
+    width: 16px;
+}
+
+#sk_omnibarSearchResult li div.title {
+    text-align: left;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+#sk_omnibarSearchResult li div.url {
+    display: none;
+    font-weight: bold;
+    white-space: nowrap;
+    width: 25rem;
+    overflow: hidden;
+}
+
+#sk_omnibarSearchResult li.focused div.url {
+    white-space: normal;
+}
+
+#sk_omnibarSearchResult li span.annotation {
+    float: right;
+}
+
+/* Switch Tab Button */
+#sk_omnibarSearchResult li .switch-tab {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: -15px 0px 30px rgba(0, 0, 0, 0.3);
+    width: 2rem;
+    height: 2rem;
+    border-radius: 20px;
+}
+
+#sk_omnibarSearchResult .tab_in_window {
+    display: inline-block;
+    padding: 5px;
+    margin: 5px;
+    box-shadow: 0px 2px 10px rgb(0 0 0 / 88%);
+}
+
+/* ==========================================================================
+   Result Page Indicator
+   ========================================================================== */
+
+span.resultPage:hover {
+    color: #ffffff;
+}
+
+span.resultPage {
+    color: #ffffff05;
+}
+
+/* ==========================================================================
+   Status Bar
+   ========================================================================== */
+
+#sk_status {
+    position: fixed;
+    bottom: 0;
+    right: 20%;
+    z-index: 2147483000;
+    padding: 4px 8px 0 8px;
+    border-radius: 4px 4px 0px 0px;
+    border: 1px solid #777;
+    font-size: 12px;
+}
+
+#sk_status > span {
+    line-height: 16px;
+}
+
+/* ==========================================================================
+   Find and Keystroke
+   ========================================================================== */
+
+#sk_find {
+    border-style: none;
+    outline: none;
+}
+
+#sk_keystroke {
+    padding: 6px;
+    position: fixed;
+    float: right;
+    bottom: 0px;
+    z-index: 2147483000;
+    right: 0px;
+    background: #000;
+    color: #fff;
+}
+
+/* ==========================================================================
+   Popup, Usage, and Editor
+   ========================================================================== */
+
+#sk_usage,
+#sk_popup,
+#sk_editor {
+    overflow: auto;
+    position: fixed;
+    width: 80%;
+    max-height: 80%;
+    top: 10%;
+    left: 10%;
+    text-align: left;
+    box-shadow: 0px 2px 10px rgba(0, 0, 0, 0.8);
+    z-index: 2147483298;
+    padding: 1rem;
+    border-radius: 16px;
+    backdrop-filter: blur(10px);
+    background-color: var(--omnibar-bg-color);
+    color: var(--omnibar-text-color);
+    border: var(--omnibar-border);
+}
+
+#sk_popup img {
+    width: 100%;
+}
+
+#sk_usage > div {
+    display: inline-block;
+    vertical-align: top;
+}
+
+#sk_usage .kbd-span {
+    width: 80px;
+    text-align: right;
+    display: inline-block;
+}
+
+#sk_usage .feature_name {
+    text-align: center;
+    padding-bottom: 4px;
+}
+
+#sk_usage .feature_name > span {
+    border-bottom: 2px solid #888;
+}
+
+#sk_usage span.annotation {
+    padding-left: 32px;
+    line-height: 22px;
+}
+
+#sk_usage * {
+    font-size: 10pt;
+}
+
+/* ==========================================================================
+   Keyboard Styling
+   ========================================================================== */
+
+kbd {
+    white-space: nowrap;
+    display: inline-block;
+    padding: 3px 5px;
+    font: 11px Consolas, "Liberation Mono", Menlo, Courier, monospace;
+    line-height: 10px;
+    vertical-align: middle;
+    border: solid 1px #ccc;
+    border-bottom-color: #bbb;
+    border-radius: 3px;
+    box-shadow: inset 0 -1px 0 #bbb;
+}
+
+/* ==========================================================================
+   Banner
+   ========================================================================== */
+
+#sk_banner {
+    padding: 0.5rem;
+    position: fixed;
+    left: 10%;
+    top: -3rem;
+    z-index: 2147483000;
+    width: 80%;
+    border-radius: 0px 0px 4px 4px;
+    border: 1px solid #ffc356;
+    border-top-style: none;
+    text-align: center;
+    background: rgb(255, 233, 182);
+    white-space: nowrap;
+    text-overflow: ellipsis;
+    overflow: hidden;
+}
+
+/* ==========================================================================
+   Tabs Panel
+   ========================================================================== */
+
+#sk_tabs {
+    position: fixed;
+    top: 0;
+    left: 0;
+    background: #000;
+    overflow: auto;
+    z-index: 2147483000;
+}
+
+#sk_tabs.horizontal {
+    width: 100%;
+}
+
+#sk_tabs.horizontal div.sk_tab {
+    display: inline-grid;
+}
+
+#sk_tabs.horizontal div.sk_tab_hint {
+    float: right;
+}
+
+#sk_tabs.vertical div.sk_tab_title {
+    min-width: 100pt;
+    max-width: 60vw;
+}
+
+#sk_tabs.vertical div.sk_tab_hint {
+    position: fixed;
+    left: 80pt;
+}
+
+#sk_tabs.inline div.sk_tab {
+    display: inline-block;
+}
+
+div.tab_rocket {
+    margin: 6px;
+    display: inline-block;
+    padding: 0px 2px 0px 2px;
+    opacity: 0;
+}
+
+div.sk_tab {
+    vertical-align: bottom;
+    justify-items: center;
+    border-radius: 3px;
+    margin: 1px;
+    background: -webkit-gradient(linear, left top, left bottom, color-stop(0%, #DAE6F5), color-stop(100%, #B0CCEF));
+    box-shadow: 0px 3px 7px 0px rgba(245, 245, 0, 0.3);
+    padding-top: 2px;
+    border-top: solid 1px black;
+}
+
+div.sk_tab_wrap,
+div.sk_tab_icon {
+    display: inline-block;
+}
+
+div.sk_tab_icon > img {
+    width: 18px;
+}
+
+div.sk_tab_title {
+    display: inline-block;
+    vertical-align: middle;
+    font-size: 10pt;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+    overflow: hidden;
+    padding-left: 5px;
+    color: #000;
+}
+
+div.sk_tab_url {
+    font-size: 10pt;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+    overflow: hidden;
+    color: #333;
+}
+
+div.sk_tab_hint {
+    display: inline-block;
+    font-size: 10pt;
+    font-weight: bold;
+    padding: 0px 2px 0px 2px;
+    margin: 6px;
+    background: -webkit-gradient(linear, left top, left bottom, color-stop(0%, #FFF785), color-stop(100%, #FFC542));
+    color: #000;
+    border: solid 1px #C38A22;
+    border-radius: 3px;
+    box-shadow: 0px 3px 7px 0px rgba(0, 0, 0, 0.3);
+}
+
+/* ==========================================================================
+   Bubble (Tooltip)
+   ========================================================================== */
+
+#sk_bubble {
+    position: absolute;
+    padding: 9px;
+    border: 1px solid #999;
+    border-radius: 4px;
+    box-shadow: 0 0 20px rgba(0, 0, 0, 0.5);
+    color: #222;
+    background-color: #ffd;
+    z-index: 2147483000;
+    font-size: 14px;
+}
+
+#sk_bubble .sk_bubble_content {
+    overflow-y: scroll;
+    background-size: 3px 100%;
+    background-position: 100%;
+    background-repeat: no-repeat;
+}
+
+.sk_scroller_indicator_top {
+    background-image: linear-gradient(rgb(0, 0, 0), transparent);
+}
+
+.sk_scroller_indicator_middle {
+    background-image: linear-gradient(transparent, rgb(0, 0, 0), transparent);
+}
+
+.sk_scroller_indicator_bottom {
+    background-image: linear-gradient(transparent, rgb(0, 0, 0));
+}
+
+/* ==========================================================================
+   ACE Editor Override
+   ========================================================================== */
+
+.ace_editor.ace_autocomplete {
+    z-index: 2147483300 !important;
+    width: 80% !important;
+}
+
+/* ==========================================================================
+   Responsive Design
+   ========================================================================== */
+
+@media only screen and (max-width: 767px) {
+    #sk_omnibar {
+        width: 100%;
+        left: 0;
+    }
+
+    #sk_omnibarSearchResult {
+        max-height: 50vh;
+        overflow: scroll;
+    }
+
+    .sk_omnibar_bottom #sk_omnibarSearchArea {
+        margin: 0;
+        padding: 0.2rem;
+    }
+}

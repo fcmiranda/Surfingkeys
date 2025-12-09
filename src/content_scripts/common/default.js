@@ -832,8 +832,8 @@ export default function(api, clipboard, insert, normal, hints, visual, front, br
     });
 
     if (!getBrowserName().startsWith("Safari")) {
-        mapkey('t', '#8Open a URL', function() {
-            front.openOmnibar({type: "URLs"});
+        mapkey('t', '#8Open omnibar', function() {
+            front.openOmnibar({type: "OmniSearch"});
         });
         mapkey('go', '#8Open a URL in current tab', function() {
             front.openOmnibar({type: "URLs", tabbed: false});

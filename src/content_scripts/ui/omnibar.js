@@ -24,6 +24,12 @@ import {
 } from '../common/utils.js';
 import { RUNTIME, runtime } from '../common/runtime.js';
 import LLMChat from './llmchat';
+import {
+    fnPromptIndicatorHtml,
+    fnPromptOmni,
+    fnPromptBolt,
+    fnIconHtml,
+} from './omnibarIcons.js';
 
 const separator = '➤';
 const separatorHtml = `<span class='separator'>${separator}</span>`;
@@ -145,7 +151,7 @@ function createOmnibar(front, clipboard) {
                 } else {
                     _start = 1;
                 }
-                _listResultPage();
+                listResultPageFn();
             }
         }
     });
@@ -160,7 +166,7 @@ function createOmnibar(front, clipboard) {
                 } else {
                     _start = Math.ceil(_items.length / runtime.conf.omnibarMaxResults);
                 }
-                _listResultPage();
+                listResultPageFn();
             }
         }
     });
@@ -454,6 +460,67 @@ function createOmnibar(front, clipboard) {
         return li;
     };
 
+
+    self.createOmniSearchURLItem = function(b, rxp) {
+        b.title = (b.title && b.title !== "") ? b.title : safeDecodeURI(b.url);
+        var type = "", isTab = false, additional = "", uid = b.uid;
+
+        const isUrl = b.url.startsWith("http://") || b.url.startsWith("https://");
+        if(isUrl) {
+            b.favIconUrl = `https://www.google.com/s2/favicons?domain=${b.url}&sz=16`;
+        }
+
+        if (b.hasOwnProperty('lastVisitTime')) {
+            type = "history";
+            additional = `<span class=omnibar_timestamp># ${timeStampString(b.lastVisitTime)}</span>`;
+            additional += `<span class=omnibar_visitcount> (${b.visitCount})</span>`;
+            uid = "H" + b.url;
+        } else if(b.hasOwnProperty('dateAdded')) {
+            type = "grade";
+            uid = "B" + b.id;          
+        } else if(b.hasOwnProperty('width')) {
+            type = "tab";
+            uid = "T" + b.windowId + ":" + b.id;
+            isTab = true;
+        } else if(b.type && b.type.length === 2 && b.type.charCodeAt(0) > 255) {
+            type = b.type;
+        }
+
+        if(b.bookmark){
+            b.title = b.bookmark.title;
+            b.parentId = b.bookmark.parentId;
+            type = "grade";
+        }
+
+        if(b.parentId){
+            const folderPath = htmlEncode(bookmarkFolders[b.parentId].title || "");
+            additional = `<span class=omnibar_folder>@ ${self.highlight(rxp, folderPath)}</span>`;
+        }
+
+        var li = createElementWithContent('li', `
+            <div class="logo-wrapper">
+                <div class="logo">
+                    ${isUrl ? `<img src="${b.favIconUrl}" />` : `<span class="material-symbols-outlined">public</span>`}
+                </div>
+                <div class="icon-overlay">
+                    <span class="material-symbols-outlined">${type}</span>
+                </div>
+            </div>`);
+        li.appendChild(createElementWithContent('div',
+            `<div class="title">${self.highlight(rxp, htmlEncode(b.title))} ${additional}</div>
+             <div class="url">${self.highlight(rxp, htmlEncode(safeDecodeURIComponent(b.url)))}</div>`, { "class": "text-container" }));
+        
+       if(isTab){
+            li.appendChild(createElementWithContent('div', `
+                <span class="material-symbols-outlined">tab_move</span>
+            `, { "class": "switch-tab" }));
+        }     
+        
+        li.uid = uid;
+        li.url = b.url;
+        return li;
+    };
+
     self.createItemFromRawHtml = function({ html, props }) {
         const li = createElementWithContent('li', html);
         if (typeof props === "object") {
@@ -483,6 +550,7 @@ function createOmnibar(front, clipboard) {
     };
 
     var _start, _items, _showFolder, _page;
+    var listResultPageFn;
 
     self.getPageSize = () => {
         return runtime.conf.omnibarMaxResults;
@@ -496,7 +564,7 @@ function createOmnibar(front, clipboard) {
         _start = 1;
         _items = items;
         _showFolder = showFolder;
-        _listResultPage();
+        listResultPageFn();
         if (savedFocused !== -1) {
             const items = self.resultsDiv.querySelectorAll('#sk_omnibarSearchResult>ul>li');
             self.focusItem(items[savedFocused]);
@@ -508,6 +576,10 @@ function createOmnibar(front, clipboard) {
         return _items;
     };
 
+    /**
+     * Original _listResultPage - renders result items using createURLItem
+     * @private
+     */
     function _listResultPage() {
         var si = (_start - 1) * runtime.conf.omnibarMaxResults,
             ei = si + runtime.conf.omnibarMaxResults,
@@ -541,8 +613,61 @@ function createOmnibar(front, clipboard) {
         });
     }
 
+    /**
+     * Refactored _listResultPageOmniSearch - renders result items with enhanced styling
+     * Uses createOmniSearchURLItem for rich favicon and icon displays
+     * @private
+     */
+    function _listResultPageOmniSearch() {
+        const pageSize = runtime.conf.omnibarMaxResults;
+        const startIndex = (_start - 1) * pageSize;
+        const endIndex = Math.min(startIndex + pageSize, _items.length);
+        const total = _items.length === runtime.conf.omnibarHistoryCacheSize 
+            ? `${_items.length}+` 
+            : _items.length;
+        
+        setSanitizedContent(resultPageSpan, `${startIndex + 1} - ${endIndex} / ${total}`);
+        _page = _items.slice(startIndex, endIndex);
+        
+        const query = self.input.value.trim();
+        const rxp = query.length 
+            ? regexFromString(query, runtime.getCaseSensitive(query), true) 
+            : null;
+        
+        self.listResults(_page, (item) => {
+            if (item.html) {
+                return self.createItemFromRawHtml(item);
+            }
+            
+            if (item.url !== undefined) {
+                if (getBrowserName() === "Firefox" && /^(place|data):/i.test(item.url)) {
+                    return null;
+                }
+                return self.createOmniSearchURLItem(item, rxp);
+            }
+            
+            if (_showFolder) {
+                const li = createElementWithContent('li', 
+                    `<div class="title">${fnIconHtml('folder_special')}${self.highlight(rxp, item.title)}</div>`
+                );
+                li.folder_name = item.title;
+                li.folderId = item.id;
+                return li;
+            }
+            
+            return null;
+        });
+    }
+
+    // default renderer: original behavior
+    listResultPageFn = _listResultPage;
+
     var _savedAargs;
-    ui.onShow = function(args) {
+    
+    /**
+     * Original ui.onShow logic extracted to helper
+     */
+    function onShowDefault(args) {
         handler = handlers[args.type];
         if (!self.input) {
             self.input = _createInput();
@@ -576,6 +701,77 @@ function createOmnibar(front, clipboard) {
         setSanitizedContent(self.promptSpan, handler.prompt);
         setSanitizedContent(resultPageSpan, "");
         ui.scrollTop = 0;
+    }
+
+    /**
+     * Refactored onShowOmniSearch - enhanced omnibar initialization for OmniSearch
+     * Uses new container structure and improved positioning
+     * @param {Object} args - Omnibar arguments containing type, tabbed, pref, extra
+     */
+    function onShowOmniSearch(args) {
+        // Initialize input if needed
+        if (!self.input) {
+            self.input = _createInput();
+            document.querySelector("#sk_omnibarSearchArea").insertBefore(self.input, resultPageSpan);
+        }
+        
+        _savedAargs = args;
+        
+        // Reset position classes
+        ui.classList.remove("sk_omnibar_middle", "sk_omnibar_bottom");
+        
+        // Handle mobile Safari
+        if (getBrowserName() === "Safari-iOS") {
+            runtime.conf.omnibarPosition = "bottom";
+        }
+        
+        const position = runtime.conf.omnibarPosition;
+        ui.classList.add(`sk_omnibar_${position}`);
+        
+        // Position results div based on omnibar position
+        self.resultsDiv.remove();
+        const container = document.querySelector("#sk_omnibar_container");
+        
+        if (position === "bottom") {
+            ui.insertBefore(self.resultsDiv, document.querySelector("#sk_omnibarSearchArea"));
+        } else if (container) {
+            container.append(self.resultsDiv);
+        } else {
+            ui.append(self.resultsDiv);
+        }
+
+        // Configure state
+        self.tabbed = args.tabbed !== undefined ? args.tabbed : true;
+        handler = handlers[args.type];
+        
+        // Focus and activate
+        self.input.focus();
+        self.enter();
+        
+        if (args.pref) {
+            self.input.value = args.pref;
+        }
+        
+        // Initialize handler
+        handler.onOpen && handler.onOpen(args.extra);
+        lastHandler = handler;
+        
+        // Update UI
+        setSanitizedContent(self.promptSpan, handler.prompt);
+        setSanitizedContent(resultPageSpan, "");
+        ui.scrollTop = 0;
+    }
+
+    /**
+     * Dispatcher: choose default or omni search onShow handler
+     */
+    ui.onShow = function(args) {
+        listResultPageFn = args.type === 'OmniSearch' ? _listResultPageOmniSearch : _listResultPage;
+        if (args.type === 'OmniSearch') {
+            onShowOmniSearch(args);
+            return;
+        }
+        onShowDefault(args);
     };
 
     ui.onHide = function() {
@@ -723,6 +919,30 @@ function createOmnibar(front, clipboard) {
                 sortByMostUsed: runtime.conf.historyMUOrder
             }, function(response) {
                 resolve(response.history);
+            });
+        });
+    }));
+    self.addHandler('OmniSearch', OpenURLs(fnPromptBolt, self, () => {
+        return new Promise((resolve, reject) => {
+            self.listBookmarkFolders(function() {
+                RUNTIME('omniSearch', {
+                    maxResults: self.getHistoryCacheSize(),
+                    query: self.input.value
+                }, function(response) {
+                    let results = [];
+                    if (response.groupedUrls) {
+                        const { tabs, topSites, bookmarks, history } = response.groupedUrls;
+                        results = [
+                            ...tabs,
+                            ...topSites,
+                            ...bookmarks,
+                            ...history
+                        ];
+                    } else if (response.urls) {
+                        results = response.urls;
+                    }
+                    resolve(results);
+                });
             });
         });
     }));

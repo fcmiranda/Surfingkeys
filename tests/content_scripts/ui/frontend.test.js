@@ -1,6 +1,6 @@
 const fs = require('fs');
 const path = require('path');
-const html = fs.readFileSync(path.resolve(__dirname, '../../../src/content_scripts/ui/frontend.html'), 'utf8');
+const html = fs.readFileSync(path.resolve(__dirname, '../../../src/content_scripts/ui/frontend-omni.html'), 'utf8');
 
 import { waitForEvent } from '../../utils';
 

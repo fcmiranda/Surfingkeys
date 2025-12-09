@@ -72,7 +72,7 @@
         "pages/neovim.html",
         "pages/emoji.tsv",
         "pages/l10n.json",
-        "pages/frontend.html",
+        "pages/frontend-omni.html",
         "pages/pdf_viewer.html",
         "pages/shadow.css"
     ],

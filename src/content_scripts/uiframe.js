@@ -8,7 +8,7 @@ function createUiHost(browser, onload) {
     uiHost.style.display = "block";
     uiHost.style.opacity = 1;
     uiHost.style.colorScheme = "light";
-    var frontEndURL = chrome.runtime.getURL('pages/frontend.html');
+    var frontEndURL = chrome.runtime.getURL('pages/frontend-omni.html');
     var ifr = document.createElement("iframe");
     ifr.setAttribute('allowtransparency', true);
     ifr.setAttribute('frameborder', 0);

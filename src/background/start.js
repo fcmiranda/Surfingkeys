@@ -1,10 +1,8 @@
 import {
     filterByTitleOrUrl,
-    regexFromString,
-    safeDecodeURI,
 } from '../common/utils.js';
 import llmClients from './llm.js';
-import fuzzysort from 'fuzzysort';
+import { createOmniSearchHandler } from './omniSearch.js';
 
 function request(url, onReady, headers, data, onException) {
     headers = headers || {};
@@ -1092,154 +1090,15 @@ function start(browser) {
         });
     };
 
-    /**
-     * Recursively extracts bookmarks from the bookmark tree with concatenated folder paths
-     * @param {Array} tree - The bookmark tree nodes
-     * @param {string} parentTitle - The accumulated parent folder path
-     * @returns {Object} - Contains bookmarksList (array) and bookmarksMap (Map by URL)
-     */
-    function getBookmarksWithFullPath(tree, parentTitle = '') {
-        let bookmarksList = [];
-        let bookmarksMap = new Map();
-
-        for (const node of tree) {
-            const isFolder = !node.url && node.children;
-            
-            if (isFolder) {
-                // Build the folder path
-                const folderTitle = parentTitle ? `${parentTitle} - ${node.title}` : node.title;
-                const { bookmarksList: childBookmarks, bookmarksMap: childMap } = 
-                    getBookmarksWithFullPath(node.children, folderTitle);
-                bookmarksList = bookmarksList.concat(childBookmarks);
-                bookmarksMap = new Map([...bookmarksMap, ...childMap]);
-            } else {
-                // It's a bookmark - add with full path title
-                const bookmark = {
-                    ...node,
-                    fullPathTitle: parentTitle ? `${parentTitle} - ${node.title}` : node.title
-                };
-                bookmarksList.push(bookmark);
-                bookmarksMap.set(node.url, bookmark);
-            }
-        }
-
-        return { bookmarksList, bookmarksMap };
-    }
-
-    /**
-     * Filters and orders tabs by MRU (Most Recently Used) if enabled
-     * @param {Array} tabs - Array of tab objects
-     * @param {Object} message - Message containing tabsThreshold
-     * @param {Object} currentTab - The current active tab
-     * @returns {Array} - Filtered and sorted tabs
-     */
-    function filterAndOrderTabsByMRU(tabs, message, currentTab) {
-        if (tabs.length > message.tabsThreshold && conf.tabsMRUOrder) {
-            // Remove current tab when MRU ordering is enabled
-            tabs = tabs.filter(t => t.id !== currentTab.id);
-            
-            tabs.sort((x, y) => {
-                const a = x.lastAccessed || tabActivated[x.id];
-                const b = y.lastAccessed || tabActivated[y.id];
-
-                if (!isFinite(a) && !isFinite(b)) return 0;
-                if (!isFinite(a)) return 1;
-                if (!isFinite(b)) return -1;
-
-                return b - a;
-            });
-        }
-        return tabs;
-    }
-
-    /**
-     * Unified search across tabs, bookmarks, top sites, and history
-     * Returns grouped results for flexible UI rendering
-     */
-    self.omniSearch = function(message, sender, sendResponse) {
-        const currentTab = sender.tab;
-        const queryInfo = message.queryInfo || {};
-        const query = message.query || '';
-        const maxResults = message.maxResults || 100;
-
-        // Get all tabs
-        chrome.tabs.query(queryInfo, function(tabs) {
-            tabs = filterAndOrderTabsByMRU(tabs, message, currentTab);
-
-            // Get bookmarks tree
-            chrome.bookmarks.getTree(function(tree) {
-                const { bookmarksMap } = getBookmarksWithFullPath(tree);
-
-                // Filter tabs and annotate with bookmark info if available
-                const filteredTabs = tabs.filter(tab => {
-                    // Attach bookmark info to tab if URL matches
-                    if (bookmarksMap.has(tab.url)) {
-                        tab.bookmark = bookmarksMap.get(tab.url);
-                        bookmarksMap.delete(tab.url); // Remove to avoid duplicates
-                    }
-
-                    if (query) {
-                        const rxp = regexFromString(query, false, false);
-                        return rxp.test(tab.title) || 
-                               rxp.test(safeDecodeURI(tab.url)) || 
-                               rxp.test(tab.bookmark?.fullPathTitle || '');
-                    }
-                    return true;
-                });
-
-                // Get remaining bookmarks (not already open as tabs)
-                const remainingBookmarks = [...bookmarksMap.values()];
-
-                // Get top sites
-                const getTopSitesPromise = new Promise(resolve => {
-                    if (chrome.topSites) {
-                        chrome.topSites.get(function(urls) {
-                            resolve(_filterByTitleOrUrl(urls, query));
-                        });
-                    } else {
-                        resolve([]);
-                    }
-                });
-
-                getTopSitesPromise.then(topSites => {
-                    // Apply fuzzy search to bookmarks
-                    const fuzzyBookmarks = query 
-                        ? fuzzysort.go(query, remainingBookmarks, { 
-                            key: 'fullPathTitle', 
-                            limit: 100, 
-                            threshold: 0.5 
-                          }).map(result => result.obj)
-                        : remainingBookmarks.slice(0, 100);
-
-                    const currentResultCount = filteredTabs.length + topSites.length + fuzzyBookmarks.length;
-                    const remainingSlots = Math.max(0, maxResults - currentResultCount);
-
-                    if (remainingSlots > 0) {
-                        // Get history to fill remaining slots
-                        _getHistory(query, remainingSlots, function(historyItems) {
-                            _response(message, sendResponse, {
-                                groupedUrls: {
-                                    tabs: filteredTabs,
-                                    topSites: topSites,
-                                    bookmarks: fuzzyBookmarks,
-                                    history: historyItems
-                                }
-                            });
-                        }, true);
-                    } else {
-                        _response(message, sendResponse, {
-                            groupedUrls: {
-                                tabs: filteredTabs,
-                                topSites: topSites,
-                                bookmarks: fuzzyBookmarks,
-                                history: []
-                            }
-                        });
-                    }
-                });
-            });
-        });
-    };
+    // OmniSearch: Unified search across tabs, bookmarks, top sites, and history
+    // Uses the createOmniSearchHandler factory for clean separation of concerns
+    self.omniSearch = createOmniSearchHandler({
+        conf,
+        tabActivated,
+        _filterByTitleOrUrl,
+        _getHistory,
+        _response
+    });
 
     function filterBookmarksByQuery(bookmarks, query, caseSensitive) {
         return bookmarks.filter(function(b) {
@@ -1348,7 +1207,7 @@ function start(browser) {
             });
         } else {
             if (message.tab.tabbed) {
-                if (sender.frameId !== 0 && chrome.runtime.getURL("pages/frontend.html") === sender.url
+                if (sender.frameId !== 0 && chrome.runtime.getURL("pages/frontend-omni.html") === sender.url
                     || !sender.tab) {
                     // if current call was made from Omnibar, the sender.tab may be stale,
                     // as sender was bound when port was created.

@@ -50,7 +50,7 @@ function modifyManifest(browser, mode, buffer) {
                     "pages/neovim.html",
                     "pages/emoji.tsv",
                     "pages/l10n.json",
-                    "pages/frontend.html",
+                    "pages/frontend-omni.html",
                     "pages/pdf_viewer.html",
                     "pages/pdf_viewer.css",
                     "pages/pdf_viewer.mjs",
@@ -99,8 +99,8 @@ module.exports = (env, argv) => {
     };
     const copyPatterns = [
         { from: 'src/pages', to: 'pages', globOptions: pagesCopyOptions },
-        { from: 'src/content_scripts/ui/frontend.html', to: 'pages' },
-        { from: 'src/content_scripts/ui/frontend.css', to: 'pages' },
+        { from: 'src/content_scripts/ui/frontend-omni.html', to: 'pages' },
+        { from: 'src/content_scripts/ui/frontend-omni.css', to: 'pages' },
         { from: 'node_modules/ace-builds/src-noconflict/worker-javascript.js', to: 'pages' },
         { from: 'src/icons', to: 'icons' },
         { from: 'src/content_scripts/content.css', to: 'content.css' },
