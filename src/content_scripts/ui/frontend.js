@@ -25,7 +25,7 @@ import createHints from '../common/hints.js';
 import createAPI from '../common/api.js';
 import createDefaultMappings from '../common/default.js';
 import createOmnibar from './omnibar.js';
-import createCommands from './command.js';
+import createCommands from './command-omni.js';
 
 const Front = (function() {
     const clipboard = createClipboard();
@@ -41,7 +41,7 @@ const Front = (function() {
     self.topSize = [0, 0];
     const omnibar = createOmnibar(self, clipboard);
 
-    createCommands(normal, omnibar.command, omnibar);
+    createCommands(omnibar.omniCommand);
 
     const modes = {
         Insert: insert,

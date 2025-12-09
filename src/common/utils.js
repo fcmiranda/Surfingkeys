@@ -23,15 +23,16 @@ function regexFromString(str, caseSensitive, highlight) {
     return rxp;
 }
 
-function filterByTitleOrUrl(urls, query, caseSensitive) {
+function filterByTitleOrUrl(urls, query) {
     if (query && query.length) {
-        var rxp = regexFromString(query, caseSensitive, false);
+        var rxp = regexFromString(query, false);
         urls = urls.filter(function(b) {
-            return rxp.test(b.title) || rxp.test(b.url);
+            return rxp.test(b.title) || rxp.test(safeDecodeURI(b.url));
         });
     }
     return urls;
 }
+
 
 /**
  * Safely decode a URI, returning the original string if decoding fails
@@ -46,8 +47,16 @@ function safeDecodeURI(url) {
     }
 }
 
+function filterByName(commands, query) {
+    return commands.filter(command => {
+        var rxp = regexFromString(query, false);
+        return rxp.test(command.name);
+    });
+}
+
 export {
     LOG,
+    filterByName,
     filterByTitleOrUrl,
     regexFromString,
     safeDecodeURI,
