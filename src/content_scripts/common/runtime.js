@@ -60,7 +60,7 @@ const runtime = (function() {
             enableAutoFocus: true,
             enableEmojiInsertion: false,
             experiment: false,
-            focusFirstCandidate: false,
+            focusFirstCandidate: true,
             focusOnSaved: true,
             hintAlign: "center",
             hintExplicit: false,

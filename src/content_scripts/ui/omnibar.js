@@ -1620,8 +1620,8 @@ function SearchEngine(omnibar, front) {
 
 function Commands(omnibar, front) {
     var self = {
-        focusFirstCandidate: false,
-        prompt: ':',
+        focusFirstCandidate: true,
+        prompt: fnIconHtml('terminal'),
     }, items = {};
 
     var historyInc = 0;
