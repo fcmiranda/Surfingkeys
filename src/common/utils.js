@@ -24,14 +24,17 @@ function regexFromString(str, caseSensitive, highlight) {
 }
 
 function filterByTitleOrUrl(urls, query, caseSensitive) {
+    // Preserve legacy signature by keeping the optional caseSensitive flag while
+    // still applying the safer URL decoding logic introduced recently.
     if (query && query.length) {
-        var rxp = regexFromString(query, caseSensitive, false);
+        const rxp = regexFromString(query, caseSensitive, false);
         urls = urls.filter(function(b) {
-            return rxp.test(b.title) || rxp.test(b.url);
+            return rxp.test(b.title) || rxp.test(safeDecodeURI(b.url));
         });
     }
     return urls;
 }
+
 
 /**
  * Safely decode a URI, returning the original string if decoding fails
@@ -46,8 +49,16 @@ function safeDecodeURI(url) {
     }
 }
 
+function filterByName(commands, query) {
+    return commands.filter(command => {
+        var rxp = regexFromString(query, false);
+        return rxp.test(command.name);
+    });
+}
+
 export {
     LOG,
+    filterByName,
     filterByTitleOrUrl,
     regexFromString,
     safeDecodeURI,

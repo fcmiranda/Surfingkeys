@@ -26,6 +26,7 @@ import createAPI from '../common/api.js';
 import createDefaultMappings from '../common/default.js';
 import createOmnibar from './omnibar.js';
 import createCommands from './command.js';
+import createOmniCommands from './command-omni.js';
 
 const Front = (function() {
     const clipboard = createClipboard();
@@ -41,7 +42,9 @@ const Front = (function() {
     self.topSize = [0, 0];
     const omnibar = createOmnibar(self, clipboard);
 
+    // Register legacy commands and the new Omni commands side-by-side.
     createCommands(normal, omnibar.command, omnibar);
+    createOmniCommands(omnibar.omniCommand);
 
     const modes = {
         Insert: insert,

@@ -5,6 +5,7 @@ import { debounce } from 'lodash';
 import {
     filterByTitleOrUrl,
     regexFromString,
+    filterByName,
 } from '../../common/utils.js';
 import {
     attachFaviconToImgSrc,
@@ -51,6 +52,8 @@ function createOmnibar(front, clipboard) {
 
     self.mappings = new Trie();
     self.map_node = self.mappings;
+    self.commandList = [];
+    self.commandExecute = () => {};
 
     function getPosition() {
         let p = runtime.conf.omnibarPosition;
@@ -654,6 +657,17 @@ function createOmnibar(front, clipboard) {
                 li.folderId = item.id;
                 return li;
             }
+
+            if(query.length && item.hasOwnProperty('cmd')){
+                const li = createElementWithContent('li', `
+                    <div class="logo-wrapper">
+                        <div class="logo">
+                            ${fnIconHtml(item.icon)}
+                        </div>
+                    </div>${item.cmd}<span class=annotation>${htmlEncode(item.annotation)}</span>`);
+                li.cmd = item.cmd;
+                return li;
+            }
             
             return null;
         });
@@ -809,6 +823,12 @@ function createOmnibar(front, clipboard) {
     self.openFocused = function() {
         var ret = false, fi = self.resultsDiv.querySelector('li.focused');
         var url;
+
+        if(fi?.cmd){
+            self.commandExecute(fi.cmd)
+            return;
+        }
+
         if (fi) {
             url = fi.url;
         } else {
@@ -862,6 +882,9 @@ function createOmnibar(front, clipboard) {
                             },
                             url: li.url
                         });
+                    } else if(li?.cmd){
+                        self.commandExecute(li.cmd)
+                        return;
                     } else {
                         self.input.value = li.query;
                         self.input.focus();
@@ -929,11 +952,13 @@ function createOmnibar(front, clipboard) {
                     maxResults: self.getHistoryCacheSize(),
                     query: self.input.value
                 }, function(response) {
+                    const commands = filterByName(self.commandList || [], self.input.value)
                     let results = [];
                     if (response.groupedUrls) {
                         const { tabs, topSites, bookmarks, history } = response.groupedUrls;
                         results = [
                             ...tabs,
+                            ...commands,
                             ...topSites,
                             ...bookmarks,
                             ...history
@@ -1597,8 +1622,8 @@ function SearchEngine(omnibar, front) {
 
 function Commands(omnibar, front) {
     var self = {
-        focusFirstCandidate: false,
-        prompt: ':',
+        focusFirstCandidate: true,
+        prompt: fnIconHtml('terminal'),
     }, items = {};
 
     var historyInc = 0;
@@ -1635,7 +1660,7 @@ function Commands(omnibar, front) {
         });
         if (candidates.length) {
             omnibar.listResults(candidates, function(c) {
-                var li = createElementWithContent('li', `${c}<span class=annotation>${htmlEncode(items[c].annotation)}</span>`);
+                var li = createElementWithContent('li', `${fnIconHtml(items[c].icon)}${c}<span class=annotation>${htmlEncode(items[c].annotation)}</span>`);
                 li.cmd = c;
                 return li;
             });
@@ -1689,6 +1714,9 @@ function Commands(omnibar, front) {
         }
     }
 
+    // Expose executor so OmniSearch result items can trigger commands directly.
+    omnibar.commandExecute = execute;
+
     front._actions['executeCommand'] = function (message) {
         execute(message.cmdline);
     };
@@ -1701,6 +1729,21 @@ function Commands(omnibar, front) {
         cmd_code.feature_group = ag.feature_group;
         cmd_code.annotation = ag.annotation;
         items[cmd] = cmd_code;
+    };
+
+    omnibar.omniCommand = function ({cmd, annotation, icon}, jscode, ) {
+        var cmd_code = {
+            name: cmd,
+            cmd,
+            code: jscode, 
+            icon
+        };
+        var ag = parseAnnotation({annotation: annotation, feature_group: 14});
+        cmd_code.feature_group = ag.feature_group;
+        cmd_code.annotation = ag.annotation;
+        items[cmd] = cmd_code;
+
+        omnibar.commandList= [...omnibar.commandList || [], cmd_code];
     };
 
     return self;
