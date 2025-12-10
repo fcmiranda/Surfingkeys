@@ -46,9 +46,8 @@ const fnPromptOmni = (contextIcon, actionIcon = '') =>
  * @constant {string}
  */
 const fnPromptBolt = `<span class="prompt">
-    <span style="left: 10px;color: #72e0d1;font-size: 34px;" class="material-symbols-outlined">bolt</span>
-    <span style="left: 12px;position: absolute;color: #ed95d6;font-size: 29px;" class="material-symbols-outlined">bolt</span>
-    <span style="left: 14px;position: absolute;color: #f5d67b;font-size: 28px;" class="material-symbols-outlined">bolt</span>
+    <span style="left: 19px;  top: 14px; font-size: 13px;color: #fff; position: absolute;" class="material-symbols-outlined">bolt</span>
+    <span style="left: 14px;position: absolute;color: #ffffff;font-size: 29px;" class="material-symbols-outlined">search</span>
 </span>`;
 
 /**

@@ -79,8 +79,8 @@ body {
 }
 
 #sk_omnibar_container::before {
-    filter: blur(1.5rem);
-    opacity: 0.5;
+    filter: blur(2px);
+    opacity: 1;
 }
 
 @keyframes spin {
@@ -97,12 +97,13 @@ body {
     position: fixed;
     width: 80%;
     max-height: 80%;
-    max-width: 40%;
-    left: 27%;
-    top: 13%;
+    max-width: 42rem;
+    left: 50%;
+    transform: translateX(-50%);
+    top: 22%;
     z-index: 2147483000;
     color: var(--omnibar-text-color);
-    padding: 3rem;
+    padding: 5px;
 }
 
 #sk_omnibar span.omnibar_highlight {
