@@ -862,9 +862,30 @@ function createOmnibar(front, clipboard) {
 
     self.listResults = function (items, renderItem) {
         setSanitizedContent(self.resultsDiv, "");
+
+        const queryText = (self.input && self.input.value) ? self.input.value.trim() : "";
+
+        // If no items, show "Search with Google" fallback
         if (!items || items.length === 0) {
+            if (!queryText.length) return;
+            const ul = document.createElement("ul");
+            const li = createElementWithContent('li', `
+                <span class="material-symbols-outlined">search</span>
+                <span class="text-container">${htmlEncode(queryText)} - Search with Google</span>
+            `);
+            li.url = `https://www.google.com/search?q=${encodeURIComponent(queryText)}`;
+            li.classList.add('focused');
+            li.onclick = () => {
+                RUNTIME("openLink", {
+                    tab: { tabbed: true, active: true },
+                    url: li.url
+                });
+            };
+            ul.append(li);
+            self.resultsDiv.append(ul);
             return;
         }
+
         if (getPosition() === "bottom") {
             items.reverse();
         }
