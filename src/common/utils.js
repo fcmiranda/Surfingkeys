@@ -13,7 +13,8 @@ function regexFromString(str, caseSensitive, highlight) {
     const flags = caseSensitive ? "" : "i";
     str = str.replace(/[|\\{}()[\]^$+*?.]/g, '\\$&');
     if (highlight) {
-        rxp = new RegExp(str.replace(/\s+/, "\|"), flags);
+        var regExpression =  str.replace(/\s+/gi, "\|");
+        rxp = new RegExp(regExpression, "gi");
     } else {
         var words = str.split(/\s+/).map(function(w) {
             return `(?=.*${w})`;
