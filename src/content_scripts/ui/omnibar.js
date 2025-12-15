@@ -38,6 +38,165 @@ const separatorHtml = `<span class='separator'>${separator}</span>`;
 function createOmnibar(front, clipboard) {
     var self = new Mode("Omnibar");
 
+    // =========================================================================
+    // Theme System — uses CSS custom properties from frontend-omni.css
+    // =========================================================================
+
+    /**
+     * Theme definitions using CSS custom properties.
+     * Each theme overrides the :root variables defined in frontend-omni.css.
+     */
+    const themeDefinitions = [
+        {
+            name: "Default",
+            icon: "contrast",
+            vars: {} // uses defaults from frontend-omni.css
+        },
+        {
+            name: "Midnight Glass",
+            icon: "dark_mode",
+            vars: {
+                "--omnibar-bg-color": "rgba(0, 0, 0, 0.7)",
+                "--omnibar-inner-background-color": "#1c1f2b",
+                "--omnibar-text-color": "#e7ecff",
+                "--omnibar-text-color-transparent": "rgba(231, 236, 255, 0.25)",
+                "--omnibar-secondary-text": "#7889b8",
+                "--omnibar-li-hover-color": "rgba(114, 137, 218, 0.18)",
+                "--omnibar-li-focused-color": "rgba(114, 137, 218, 0.35)",
+                "--primary-color": "#7289da",
+                "--omnibar-border-color": "rgba(255,255,255,0.08)",
+                "--omnibar-border": "1px solid rgba(114, 137, 218, 0.25)",
+                "--omnibar-gradient-color-1": "#7289da",
+                "--omnibar-gradient-color-2": "#1b2238",
+                "--omnibar-gradient-color-3": "#5ad3ff"
+            }
+        },
+        {
+            name: "Paper Light",
+            icon: "light_mode",
+            vars: {
+                "--omnibar-bg-color": "rgba(0, 0, 0, 0.7)",
+                "--omnibar-inner-background-color": "#1c1f2b",
+                "--omnibar-text-color": "#1a1a1a",
+                "--omnibar-text-color-transparent": "rgba(26, 26, 26, 0.25)",
+                "--omnibar-secondary-text": "#5f7089",
+                "--omnibar-li-hover-color": "rgba(0, 80, 200, 0.08)",
+                "--omnibar-li-focused-color": "#dbeafe",
+                "--primary-color": "#3b82f6",
+                "--omnibar-border-color": "#e6e8ef",
+                "--omnibar-border": "1px solid #d1d5db",
+                "--omnibar-gradient-color-1": "#3b82f6",
+                "--omnibar-gradient-color-2": "#1d4ed8",
+                "--omnibar-gradient-color-3": "#a5b4fc"
+            }
+        },
+        {
+            name: "Ocean Mist",
+            icon: "water",
+            vars: {
+                "--omnibar-bg-color": "rgba(0, 0, 0, 0.7)",
+                "--omnibar-inner-background-color": "#1c1f2b",
+                "--omnibar-text-color": "#e4f4ff",
+                "--omnibar-text-color-transparent": "rgba(228, 244, 255, 0.25)",
+                "--omnibar-secondary-text": "#9bd7ff",
+                "--omnibar-li-hover-color": "rgba(64, 179, 255, 0.15)",
+                "--omnibar-li-focused-color": "rgba(64, 179, 255, 0.28)",
+                "--primary-color": "#40b3ff",
+                "--omnibar-border-color": "rgba(255,255,255,0.08)",
+                "--omnibar-border": "1px solid rgba(64, 179, 255, 0.25)",
+                "--omnibar-gradient-color-1": "#40b3ff",
+                "--omnibar-gradient-color-2": "#0f4c75",
+                "--omnibar-gradient-color-3": "#7bdff6"
+            }
+        },
+        {
+            name: "Forest",
+            icon: "forest",
+            vars: {
+                "--omnibar-bg-color": "rgba(0, 0, 0, 0.7)",
+                "--omnibar-inner-background-color": "#1c1f2b",
+                "--omnibar-text-color": "#e8f5e9",
+                "--omnibar-text-color-transparent": "rgba(232, 245, 233, 0.25)",
+                "--omnibar-secondary-text": "#a5d6a7",
+                "--omnibar-li-hover-color": "rgba(76, 175, 80, 0.15)",
+                "--omnibar-li-focused-color": "rgba(76, 175, 80, 0.32)",
+                "--primary-color": "#4caf50",
+                "--omnibar-border-color": "rgba(76, 175, 80, 0.2)",
+                "--omnibar-border": "1px solid rgba(76, 175, 80, 0.25)",
+                "--omnibar-gradient-color-1": "#4caf50",
+                "--omnibar-gradient-color-2": "#1b5e20",
+                "--omnibar-gradient-color-3": "#a5d6a7"
+            }
+        },
+        {
+            name: "Sunset",
+            icon: "wb_twilight",
+            vars: {
+                "--omnibar-bg-color": "rgba(0, 0, 0, 0.7)",
+                "--omnibar-inner-background-color": "#1c1f2b",
+                "--omnibar-text-color": "#ffe4e6",
+                "--omnibar-text-color-transparent": "rgba(255, 228, 230, 0.25)",
+                "--omnibar-secondary-text": "#fda4af",
+                "--omnibar-li-hover-color": "rgba(244, 63, 94, 0.15)",
+                "--omnibar-li-focused-color": "rgba(244, 63, 94, 0.32)",
+                "--primary-color": "#f43f5e",
+                "--omnibar-border-color": "rgba(244, 63, 94, 0.2)",
+                "--omnibar-border": "1px solid rgba(244, 63, 94, 0.25)",
+                "--omnibar-gradient-color-1": "#f43f5e",
+                "--omnibar-gradient-color-2": "#7c1d4e",
+                "--omnibar-gradient-color-3": "#fda4af"
+            }
+        }
+    ];
+
+    // Cache the style element and root for efficient updates
+    const themeStyleTag = document.getElementById('sk_theme');
+    const docRoot = document.documentElement;
+
+    /**
+     * Applies a theme by setting CSS custom properties on :root.
+     * @param {Object} vars - Key/value pairs of CSS custom properties.
+     */
+    function applyThemeVars(vars) {
+        // Reset to defaults first (clear any previous theme overrides)
+        themeDefinitions.forEach(t => {
+            Object.keys(t.vars).forEach(key => {
+                docRoot.style.removeProperty(key);
+            });
+        });
+        // Apply new theme variables
+        if (vars && typeof vars === 'object') {
+            Object.entries(vars).forEach(([key, value]) => {
+                docRoot.style.setProperty(key, value);
+            });
+        }
+    }
+
+    /**
+     * Load and apply saved theme preference from localStorage.
+     */
+    function loadSavedTheme() {
+        try {
+            const savedName = localStorage.getItem('surfingkeys.omnibarTheme');
+            if (savedName) {
+                const theme = themeDefinitions.find(t => t.name === savedName);
+                if (theme) {
+                    applyThemeVars(theme.vars);
+                }
+            }
+        } catch (e) { /* ignore storage errors */ }
+    }
+
+    // Apply saved theme on load
+    loadSavedTheme();
+
+    // Legacy helper for backward compatibility
+    function applyThemeCss(cssOrVars) {
+        if (typeof cssOrVars === 'object') {
+            applyThemeVars(cssOrVars);
+        }
+    }
+
     self.addEventListener('keydown', function(event) {
         if (event.sk_keyName.length) {
             Mode.handleMapKey.call(self, event);
@@ -306,6 +465,9 @@ function createOmnibar(front, clipboard) {
         }
         if (fi) {
             fi.classList.add('focused');
+            if (handler && typeof handler.onFocusItem === 'function') {
+                handler.onFocusItem(fi);
+            }
             const fiRect = fi.getBoundingClientRect();
             const resultsRect = self.resultsDiv.getBoundingClientRect();
             if (fiRect.top < resultsRect.top || fiRect.bottom > resultsRect.bottom) {
@@ -894,23 +1056,25 @@ function createOmnibar(front, clipboard) {
             var li = renderItem(b);
             if (li) {
                 ul.append(li);
-                li.onclick = () => {
-                    if (li.url) {
-                        RUNTIME("openLink", {
-                            tab: {
-                                tabbed: true,
-                                active: true,
-                            },
-                            url: li.url
-                        });
-                    } else if(li?.cmd){
-                        self.commandExecute(li.cmd)
-                        return;
-                    } else {
-                        self.input.value = li.query;
-                        self.input.focus();
-                    }
-                };
+                if (!li.dataset.customClick) {
+                    li.onclick = () => {
+                        if (li.url) {
+                            RUNTIME("openLink", {
+                                tab: {
+                                    tabbed: true,
+                                    active: true,
+                                },
+                                url: li.url
+                            });
+                        } else if(li?.cmd){
+                            self.commandExecute(li.cmd)
+                            return;
+                        } else {
+                            self.input.value = li.query;
+                            self.input.focus();
+                        }
+                    };
+                }
             }
         });
         self.resultsDiv.append(ul);
@@ -1036,6 +1200,16 @@ function createOmnibar(front, clipboard) {
     self.addHandler('OmniQuery', OmniQuery(self, front));
     self.addHandler('UserURLs', OpenUserURLs(self));
     self.addHandler('LLMChat', LLMChat(self, front));
+    self.addHandler('Themes', ThemePicker(self, front, applyThemeVars, themeDefinitions));
+
+    // Built-in command to open the theme picker.
+    self.omniCommand({
+        cmd: 'changeTheme',
+        annotation: 'Change omnibar theme',
+        icon: 'palette'
+    }, () => {
+        front.openOmnibar({ type: 'Themes', tabbed: true });
+    });
 
     front._actions['updateOmnibarResult'] = function(message) {
         self.listWords(message.words);
@@ -1338,6 +1512,141 @@ function OpenURLs(prompt, omnibar, queryFn) {
             omnibar.listURLs(historyItems, false);
         });
     };
+    return self;
+}
+
+/**
+ * ThemePicker handler — lists available themes with hover-to-preview.
+ * Uses CSS custom properties for instant theme switching.
+ * @param {Object} omnibar - Omnibar instance.
+ * @param {Object} front - Front instance for hidePopup.
+ * @param {Function} applyTheme - Function to apply theme vars.
+ * @param {Array} themes - Array of theme definitions.
+ */
+function ThemePicker(omnibar, front, applyTheme, themes) {
+    const self = {
+        prompt: fnIconHtml('palette'),
+        focusFirstCandidate: true,
+        isThemePicker: true
+    };
+
+    // Track index for keyboard navigation previews
+    let currentPreviewIndex = 0;
+    let filteredThemes = themes;
+
+    /**
+     * Renders a single theme list item with hover preview.
+     * @param {Object} theme - Theme definition.
+     * @param {number} index - Index in the filtered list.
+     */
+    function renderThemeItem(theme, index) {
+        const li = createElementWithContent('li', `
+            <div class="logo-wrapper">
+                <div class="logo">
+                    <span class="material-symbols-outlined">${theme.icon || 'palette'}</span>
+                </div>
+            </div>
+            <div class="text-container">
+                <div class="title">${htmlEncode(theme.name)}</div>
+            </div>
+        `);
+        li.dataset.customClick = "true";
+        li.dataset.themeIndex = index;
+
+        // Hover to preview
+        li.addEventListener('mouseenter', () => {
+            applyTheme(theme.vars);
+            // Update focus visual
+            const prev = omnibar.resultsDiv.querySelector('li.focused');
+            if (prev) prev.classList.remove('focused');
+            li.classList.add('focused');
+            currentPreviewIndex = index;
+        });
+
+        // Click to apply and close
+        li.addEventListener('click', () => {
+            applyTheme(theme.vars);
+            saveThemePreference(theme.name);
+            front.hidePopup();
+        });
+
+        return li;
+    }
+
+    /**
+     * Filters and lists themes based on input query.
+     */
+    function listThemes() {
+        const query = (omnibar.input?.value || "").trim().toLowerCase();
+        const filtered = themes.filter(t => !query || t.name.toLowerCase().includes(query));
+        filteredThemes = filtered;
+
+        // Clear and render
+        setSanitizedContent(omnibar.resultsDiv, "");
+        if (!filtered.length) return;
+
+        const ul = document.createElement("ul");
+        filtered.forEach((theme, idx) => {
+            ul.appendChild(renderThemeItem(theme, idx));
+        });
+        omnibar.resultsDiv.appendChild(ul);
+
+        // Focus first and preview
+        const firstLi = ul.querySelector('li');
+        if (firstLi) {
+            firstLi.classList.add('focused');
+            currentPreviewIndex = 0;
+            applyTheme(filtered[0].vars);
+        }
+    }
+
+    function previewFocusedFromElement(li) {
+        if (!li) return;
+        const idx = parseInt(li.dataset.themeIndex, 10);
+        if (Number.isNaN(idx)) return;
+        const theme = filteredThemes[idx];
+        if (theme) {
+            applyTheme(theme.vars);
+            currentPreviewIndex = idx;
+        }
+    }
+
+    /**
+     * Saves the selected theme name to localStorage for persistence.
+     */
+    function saveThemePreference(themeName) {
+        try {
+            localStorage.setItem('surfingkeys.omnibarTheme', themeName);
+        } catch (e) { /* ignore storage errors */ }
+    }
+
+    self.onOpen = function() {
+        listThemes();
+    };
+
+    self.onInput = function() {
+        listThemes();
+    };
+
+    self.onFocusItem = function(li) {
+        previewFocusedFromElement(li);
+    };
+
+    self.onEnter = function() {
+        const fi = omnibar.resultsDiv.querySelector('li.focused');
+        if (fi) {
+            const idx = parseInt(fi.dataset.themeIndex, 10);
+            const theme = filteredThemes[idx];
+            if (theme) {
+                applyTheme(theme.vars);
+                saveThemePreference(theme.name);
+            }
+            front.hidePopup();
+            return true;
+        }
+        return false;
+    };
+
     return self;
 }
 
